@@ -16,17 +16,33 @@ All internals are in Rust. The batch path runs fully in Rust with rayon parallel
 no Python in the hot loop. The HMM search runs in-process via a native HMMER 3.4 binding —
 no `hmmscan` subprocess, no temp files, no text parsing.
 
-## Why
+## Two engines
+
+| Engine | Select | Speed | Numbering |
+|---|---|---|---|
+| **pan** (default) | `database="pan"` | **~4× faster** (≈5.6× vs reference ANARCI; more on multicore + dedup) | 99.2% identical to ANARCI; ties on conserved IMGT anchors; *more robust* |
+| **exact** | `database="ALL"` | baseline | **byte-for-byte identical** to stock ANARCI |
+
+The **pan** engine uses one pan-species HMM per chain type (7 profiles vs ANARCI's 29);
+species and germline genes are assigned by sequence identity. It reproduces ANARCI's IMGT
+numbering on 99.2% of sequences and is actually *more robust* — it can't pick a wrong-species
+profile (a real ANARCI failure mode: 7-species ANARCI mis-numbers ~5% by letting e.g.
+`rhesus_K` win on a humanized kappa). The remaining ~0.8% are IMGT-legal gap-placement ties.
+Use `database="ALL"` whenever you need output byte-identical to stock ANARCI.
+
+## Why it's faster
 
 Stock ANARCI spends ~98% of its time in the `hmmscan` subprocess and Biopython's text
 parsing of its output (profiled: 67% subprocess, 31% parse, <2% in the numbering itself).
 anarci-rs eliminates both by running HMMER in-process and doing the parse, numbering,
-germline assignment, and batching in Rust.
+germline assignment, and batching in Rust. The **pan** engine adds a further ~4× by scanning
+7 profiles instead of 29 (the HMM search is the real bottleneck), and the batch path
+deduplicates identical sequences (a free win on repetitive data).
 
 ## Correctness
 
-anarci-rs is validated **byte-for-byte** against reference ANARCI (conda `anarci 2024.05.21`,
-HMMER 3.4) on 996 sequences (1013 domains):
+The **exact** engine (`database="ALL"`) is validated **byte-for-byte** against reference
+ANARCI (conda `anarci 2024.05.21`, HMMER 3.4) on 996 sequences (1013 domains):
 
 | Layer | Gate | Result |
 |---|---|---|
@@ -34,10 +50,14 @@ HMMER 3.4) on 996 sequences (1013 domains):
 | Germline assignment | identical v/j gene + identity | all domains |
 | HMMER-output → state vectors (`parse_hmmer_query`) | identical state vectors from identical HSPs | 996/996 |
 | End-to-end `anarci()` (imgt) | identical numbered + details + germlines + hit_tables | 996/996 |
-| Native HMM engine | identical state vectors vs stock hmmscan | see `crates/anarci-hmm/tests` |
+| Native HMM engine | identical state vectors vs stock hmmscan | 996/996 |
+
+The **pan** engine (default) is validated by `scripts/validate_pan.py`: numbering identical
+to reference ANARCI run against the same pan HMMs (996/996), 99.20% identical to stock ANARCI,
+and tied on conserved-anchor correctness (99.21%).
 
 The pinned reference HMM database and germlines are checked into `reference_data/`
-(`ALL.hmm`, `germlines.py`) so both implementations use identical data.
+(`ALL.hmm`, `FEW.hmm`, `germlines.py`) so results are reproducible.
 
 **No silent failures or fallbacks.** Every error path raises explicitly; ANARCI's own
 errors (e.g. `AssertionError` when numbering a TCR with an antibody-only scheme) are
@@ -59,8 +79,12 @@ numbered, details, hits = anarci.anarci([("id1", "EVQ..."), ("id2", "DIV...")],
 
 # batch with native Rust parallelism (ncpu controls rayon threads)
 seqs, numbered, details, hits = anarci.run_anarci("input.fasta", scheme="chothia", ncpu=8)
+
+# byte-for-byte identical to stock ANARCI (slower exact engine)
+numbering, chain_type = anarci.number("EVQLQ...SS", scheme="imgt", database="ALL")
 ```
 
+All functions take `database="pan"` (default, fast) or `database="ALL"` (exact ANARCI).
 Schemes: `imgt`, `chothia`, `kabat`, `martin`, `aho`, `wolfguy`. Chains: heavy, kappa,
 lambda, TCR α/β/γ/δ. Species: human, mouse, rat, rabbit, rhesus, pig, alpaca, cow.
 

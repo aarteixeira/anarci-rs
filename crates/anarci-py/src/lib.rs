@@ -12,26 +12,52 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList, PyTuple};
 use std::collections::BTreeSet;
 
-// ---- engine singleton (bundled ALL.hmm, loaded once) ----------------------
+// ---- engine singletons (bundled HMMs, loaded once) ------------------------
+//
+// Two engines, both embedded so the wheel is self-contained:
+//  - PAN (default): FEW.hmm, one pan-species HMM per chain type (7 profiles). ~4-12x
+//    faster; numbering equal-or-better than ANARCI; species/genes via germline assignment.
+//  - ALL (database="ALL"): the 29 species×chain profiles — byte-for-byte ANARCI.
 
-static ENGINE: OnceCell<Engine> = OnceCell::new();
+static ENGINE_ALL: OnceCell<Engine> = OnceCell::new();
+static ENGINE_PAN: OnceCell<Engine> = OnceCell::new();
 
-/// The HMM database, embedded in the extension so the wheel is self-contained.
 static ALL_HMM: &[u8] =
     include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../reference_data/dat/HMMs/ALL.hmm"));
+static PAN_HMM: &[u8] =
+    include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../reference_data/dat/HMMs/FEW.hmm"));
 
-fn engine() -> PyResult<&'static Engine> {
-    ENGINE.get_or_try_init(|| {
+fn load_engine(cell: &'static OnceCell<Engine>, data: &[u8], fname: &str) -> PyResult<&'static Engine> {
+    cell.get_or_try_init(|| {
         let dir = std::env::temp_dir().join("anarci_rs_data");
         std::fs::create_dir_all(&dir)?;
-        let path = dir.join("ALL.hmm");
-        if std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0) != ALL_HMM.len() as u64 {
-            std::fs::write(&path, ALL_HMM)?;
+        let path = dir.join(fname);
+        if std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0) != data.len() as u64 {
+            std::fs::write(&path, data)?;
         }
         Engine::load(&path).map_err(|e| {
             pyo3::exceptions::PyRuntimeError::new_err(format!("failed to load HMM engine: {e}"))
         })
     })
+}
+
+fn engine(pan: bool) -> PyResult<&'static Engine> {
+    if pan {
+        load_engine(&ENGINE_PAN, PAN_HMM, "FEW.hmm")
+    } else {
+        load_engine(&ENGINE_ALL, ALL_HMM, "ALL.hmm")
+    }
+}
+
+/// `database` -> pan(default)/exact. Unknown values error (no silent fallback).
+fn parse_database(database: &str) -> PyResult<bool> {
+    match database {
+        "pan" | "PAN" => Ok(true),
+        "ALL" => Ok(false),
+        other => Err(assertion_err(format!(
+            "Unknown database '{other}'; use 'pan' (default, fast) or 'ALL' (exact ANARCI)."
+        ))),
+    }
 }
 
 /// Adapter so the orchestration layer can use the FFI engine via the `HmmEngine` trait.
@@ -244,6 +270,7 @@ fn results_to_py<'py>(
 }
 
 /// Run the core batch with `ncpu` rayon threads (0/None -> global pool), GIL released.
+#[allow(clippy::too_many_arguments)]
 fn run_core(
     py: Python<'_>,
     seqs: &[(String, Vec<u8>)],
@@ -253,8 +280,9 @@ fn run_core(
     species: Option<&[String]>,
     bit_score_threshold: f64,
     ncpu: usize,
+    pan: bool,
 ) -> PyResult<Vec<SeqResult>> {
-    let eng = engine()?;
+    let eng = engine(pan)?;
     let res = py.allow_threads(|| {
         let run = || {
             orchestrate::run_anarci(
@@ -265,6 +293,7 @@ fn run_core(
                 assign_germline,
                 species,
                 bit_score_threshold,
+                pan,
             )
         };
         if ncpu >= 1 {
@@ -283,7 +312,7 @@ fn run_core(
 
 #[allow(clippy::too_many_arguments)]
 #[pyfunction]
-#[pyo3(signature = (sequences, scheme="imgt", database="ALL", output=false, outfile=None,
+#[pyo3(signature = (sequences, scheme="imgt", database="pan", output=false, outfile=None,
     csv=false, allow=None, hmmerpath="", ncpu=None, assign_germline=false,
     allowed_species=None, bit_score_threshold=80.0))]
 fn anarci<'py>(
@@ -301,13 +330,14 @@ fn anarci<'py>(
     allowed_species: Option<&Bound<'py, PyAny>>,
     bit_score_threshold: f64,
 ) -> PyResult<Bound<'py, PyTuple>> {
-    let _ = (database, output, outfile, csv, hmmerpath); // accepted for signature parity
+    let _ = (output, outfile, csv, hmmerpath); // accepted for signature parity
+    let pan = parse_database(database)?;
     let seqs = parse_sequences(sequences)?;
     let allow = parse_allow(allow)?;
     let species = parse_species(allowed_species)?;
     let results = run_core(
         py, &seqs, scheme, &allow, assign_germline, species.as_deref(),
-        bit_score_threshold, ncpu.unwrap_or(1),
+        bit_score_threshold, ncpu.unwrap_or(1), pan,
     )?;
     let (n, d, h) = results_to_py(py, &results)?;
     PyTuple::new(py, [n.into_any(), d.into_any(), h.into_any()])
@@ -315,7 +345,7 @@ fn anarci<'py>(
 
 #[allow(clippy::too_many_arguments)]
 #[pyfunction]
-#[pyo3(signature = (seq, scheme="imgt", database="ALL", output=false, outfile=None,
+#[pyo3(signature = (seq, scheme="imgt", database="pan", output=false, outfile=None,
     csv=false, allow=None, hmmerpath="", ncpu=1, assign_germline=false,
     allowed_species=None, bit_score_threshold=80.0))]
 fn run_anarci<'py>(
@@ -333,7 +363,8 @@ fn run_anarci<'py>(
     allowed_species: Option<&Bound<'py, PyAny>>,
     bit_score_threshold: f64,
 ) -> PyResult<Bound<'py, PyTuple>> {
-    let _ = (database, output, outfile, csv, hmmerpath);
+    let _ = (output, outfile, csv, hmmerpath);
+    let pan = parse_database(database)?;
     // Input: list of (id,seq) | fasta path | single sequence string.
     let seqs: Vec<(String, Vec<u8>)> = if let Ok(s) = seq.extract::<String>() {
         if std::path::Path::new(&s).is_file() {
@@ -349,7 +380,7 @@ fn run_anarci<'py>(
     let species = parse_species(allowed_species)?;
     let results = run_core(
         py, &seqs, scheme, &allow, assign_germline, species.as_deref(),
-        bit_score_threshold, ncpu.max(1),
+        bit_score_threshold, ncpu.max(1), pan,
     )?;
     let (n, d, h) = results_to_py(py, &results)?;
     // Sequences out: [(id, seq_str), ...]
@@ -365,7 +396,7 @@ fn run_anarci<'py>(
 }
 
 #[pyfunction]
-#[pyo3(signature = (sequence, scheme="imgt", database="ALL", allow=None,
+#[pyo3(signature = (sequence, scheme="imgt", database="pan", allow=None,
     allowed_species=vec!["human".into(), "mouse".into()]))]
 fn number<'py>(
     py: Python<'py>,
@@ -375,12 +406,12 @@ fn number<'py>(
     allow: Option<&Bound<'py, PyAny>>,
     allowed_species: Vec<String>,
 ) -> PyResult<Bound<'py, PyTuple>> {
-    let _ = database;
+    let pan = parse_database(database)?;
     let allow = parse_allow(allow)?;
     let species = if allowed_species.is_empty() { None } else { Some(allowed_species) };
-    let eng = engine()?;
+    let eng = engine(pan)?;
     let out = py.allow_threads(|| {
-        anarci_core::number(&Adapter(eng), sequence.as_bytes(), scheme, &allow, species.as_deref())
+        anarci_core::number(&Adapter(eng), sequence.as_bytes(), scheme, &allow, species.as_deref(), pan)
     });
     match out {
         Err(_) => Ok(PyTuple::new(py, [false, false])?), // scheme/chain error -> (False, False)

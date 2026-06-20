@@ -111,7 +111,7 @@ fn endtoend_imgt_parity() {
     let seqs: Vec<(String, Vec<u8>)> =
         reff.sequences.iter().map(|s| (s.id.clone(), s.seq.clone().into_bytes())).collect();
 
-    let results = run_anarci(&engine, &seqs, "imgt", &default_allow(), true, Some(&sp), 80.0)
+    let results = run_anarci(&engine, &seqs, "imgt", &default_allow(), true, Some(&sp), 80.0, false)
         .expect("run_anarci");
 
     let mut ok = 0u64;

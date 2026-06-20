@@ -113,8 +113,9 @@ def run_accuracy(ref, rs, seqs, schemes):
         allow = ALLOW_ALL if scheme in ("imgt", "aho") else ALLOW_IG
         kw = dict(scheme=scheme, allow=allow, assign_germline=True,
                   allowed_species=SPECIES, bit_score_threshold=80, ncpu=1)
+        # Byte-exact gate uses anarci_rs's EXACT engine (database="ALL").
         _, n_ref, d_ref, h_ref = ref.run_anarci(seqs, **kw)
-        _, n_rs, d_rs, h_rs = rs.run_anarci(seqs, **kw)
+        _, n_rs, d_rs, h_rs = rs.run_anarci(seqs, database="ALL", **kw)
         diffs = []
         for i in range(len(seqs)):
             diffs += cmp_numbering(n_ref[i], n_rs[i], f"seq{i}")
@@ -130,16 +131,19 @@ def run_accuracy(ref, rs, seqs, schemes):
 
 def run_speed(ref, rs, sizes, ncpus):
     print("SPEED (seq/s, higher is better)\n")
-    print(f"  {'N':>7} {'ncpu':>5} {'ref':>10} {'anarci_rs':>12} {'speedup':>8}")
+    print(f"  {'N':>7} {'ncpu':>5} {'ref ANARCI':>11} {'rs exact':>10} {'rs pan':>9} "
+          f"{'pan/ref':>8} {'pan/exact':>10}")
     for n in sizes:
         seqs = load_set(n)
         for ncpu in ncpus:
             kw = dict(scheme="imgt", allow=ALLOW_ALL, assign_germline=False,
                       allowed_species=SPECIES, bit_score_threshold=80, ncpu=ncpu)
             t0 = time.perf_counter(); ref.run_anarci(seqs, **kw); tref = time.perf_counter() - t0
-            t0 = time.perf_counter(); rs.run_anarci(seqs, **kw); trs = time.perf_counter() - t0
-            sref, srs = n / tref, n / trs
-            print(f"  {n:>7} {ncpu:>5} {sref:>10.1f} {srs:>12.1f} {srs/sref:>7.1f}x")
+            t0 = time.perf_counter(); rs.run_anarci(seqs, database="ALL", **kw); tall = time.perf_counter() - t0
+            t0 = time.perf_counter(); rs.run_anarci(seqs, database="pan", **kw); tpan = time.perf_counter() - t0
+            sref, sall, span = n / tref, n / tall, n / tpan
+            print(f"  {n:>7} {ncpu:>5} {sref:>11.1f} {sall:>10.1f} {span:>9.1f} "
+                  f"{span/sref:>7.1f}x {span/sall:>9.1f}x")
 
 
 def main():

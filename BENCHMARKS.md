@@ -5,7 +5,24 @@ with both reference `anarci` (conda 2024.05.21) and `anarci_rs` installed.
 
 Machine: Apple Silicon (arm64), 12 cores. Reference: ANARCI conda 2024.05.21 + HMMER 3.4.
 
-## Accuracy — byte-for-byte vs reference ANARCI
+## Engines
+
+anarci-rs ships two engines. **pan** (default, 7 pan-species HMMs) is ~4× faster than
+**exact** (29 species×chain HMMs, byte-identical to ANARCI), at equal accuracy.
+
+| Engine | `database=` | seq/s (1 core) | numbering |
+|---|---|---|---|
+| exact | `"ALL"` | 61 | byte-for-byte ANARCI |
+| **pan** (default) | `"pan"` | **240** | 99.2% = ANARCI; IMGT-anchor correctness tied (99.21% vs 99.21%) |
+
+Pan is ~3.9× faster single-thread and **more robust** than 7-species ANARCI (it can't
+pick a wrong-species profile — a failure mode that mis-numbers ~5% of sequences when ANARCI
+is run with many species). The ~0.8% pan-vs-ANARCI numbering differences are IMGT-legal
+gap-placement ties, not errors. Plus the batch path **deduplicates identical sequences**
+(lossless; ~1.5× on the test set, more on repetitive NGS data). Validate with
+`python scripts/validate_pan.py`.
+
+## Accuracy — byte-for-byte vs reference ANARCI (exact engine)
 
 Full `antibody_sequences.fasta` (**997 sequences**) × **6 schemes**, `assign_germline=True`,
 all 7 species. Compared end-to-end: `numbered` (every `((pos,ins),aa)`), `alignment_details`
@@ -29,14 +46,27 @@ native-engine state-vector parity 996/996, end-to-end `anarci()` 996/996.
 
 `run_anarci`, scheme=imgt, `assign_germline=False`. seq/s (higher is better).
 
-| N | ncpu | reference ANARCI | anarci-rs | speedup |
-|---|---|---|---|---|
-| 1,000 | 1 | 42.9 | 62.4 | 1.5× |
-| 1,000 | 12 | 277.2 | 414.6 | 1.5× |
-| 10,000 | 1 | 42.3 | 62.5 | 1.5× |
-| 10,000 | 12 | 253.3 | **451.5** | **1.8×** |
+| N | ncpu | ref ANARCI | rs exact | rs pan | pan/ref | pan/exact |
+|---|---|---|---|---|---|---|
+| 1,000 | 1 | 42.1 | 98.2 | 431.5 | 10.2× | 4.4× |
+| 1,000 | 12 | 234.8 | 620.5 | 2334.1 | 9.9× | 3.8× |
+| 10,000 | 1 | 38.0 | 855.7 | 3157.7 | 83.2× | 3.7× |
+| 10,000 | 12 | 170.5 | 1873.7 | 5441.4 | 31.9× | 2.9× |
 
 ### Honest reading of these numbers
+
+**Read `pan/exact` (~3.7–4.4×) as the clean engine speedup** — both run dedup, so it cancels,
+leaving the pure 7-vs-29-profile win. The `pan/ref` column is inflated by two dataset-dependent
+effects: (1) the benchmark replicates a base set, so N=10000 is ~94% duplicate sequences and
+anarci-rs's **dedup** collapses them (reference re-scans every copy) — that's why N=10000 shows
+30–83× and N=1000 (~37% duplicate) shows ~10×. On **fully diverse** data dedup does nothing,
+and the realistic speedup over reference ANARCI is roughly **~4× (pan engine) × ~1.5× (in-process,
+no subprocess/parse) ≈ 6× single-thread**, widening with cores (rayon scales better than ANARCI's
+multiprocessing). Dedup is a real, free bonus on top — large on repetitive NGS data, zero on
+unique data. (The earlier exact-only figures below — 1.5–1.8× — were measured before the pan
+engine and dedup; they still describe the byte-exact `database="ALL"` path on diverse data.)
+
+### (Historical) exact-engine-only reading
 
 The win is real but bounded, and it's worth being precise about why.
 
@@ -53,8 +83,12 @@ The win is real but bounded, and it's worth being precise about why.
   multiprocessing scales sub-linearly (43→253, ~6×), widening the gap to **1.8×** at 12 cores.
 
 We verified the engine is at the compute floor: per-thread reuse of the HMMER pipeline yields
-0% (and is actually unsafe — `pli->Z` accumulates across reused scans in SCAN mode, corrupting
-E-values), and the per-scan `bg`/`sq` allocations are negligible against the 29-profile DP.
+0% (it's safe with a manual `nmodels` reset, just pointless), and the per-scan `bg`/`sq`
+allocations are negligible against the 29-profile DP. The hmmscan→hmmsearch (`SCAN_MODELS`→
+`SEARCH_SEQS`) inversion the literature cites as 2–10× applies to *filter-dominated* workloads;
+ours is domain-definition-dominated (88%, run on ~all 29 profiles regardless of loop order),
+so the inversion's ceiling here is ~1.15× for substantial rework — not worthwhile. The real
+lever is **scanning fewer profiles**, which is exactly what the pan engine does.
 
 **Going faster would require changing the algorithm** — e.g. an MSV/SSV pre-filter to skip
 clearly-non-matching profiles, or scanning fewer profiles per query. Those change which hits

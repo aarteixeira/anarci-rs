@@ -205,6 +205,7 @@ fn process_one(
     assign_germline: bool,
     allowed_species: Option<&[String]>,
     bit_score_threshold: f64,
+    species_from_germline: bool,
 ) -> CResult<SeqResult> {
     let hsps = engine.scan_one(name, seq);
     let mut parsed = parse_hmmer_query(&hsps, seq.len(), bit_score_threshold, allowed_species);
@@ -222,10 +223,20 @@ fn process_one(
             let numbered =
                 number_sequence_from_alignment(sv, seq, scheme, Some(&det.chain_type))?;
             validate_numbering(&numbered, name, seq)?;
-            let germlines = if assign_germline {
+            // Pan engine: the HMM "species" is "pan", so derive species (and genes)
+            // from germline assignment. Exact engine: keep ANARCI semantics.
+            let want_germline = assign_germline || species_from_germline;
+            let germ = if want_germline {
                 Some(run_germline_assignment(sv, seq, &det.chain_type, allowed_species))
             } else {
                 None
+            };
+            let species = if species_from_germline {
+                germ.as_ref()
+                    .and_then(|g| g.v_gene.as_ref().map(|(sp, _)| sp.clone()))
+                    .unwrap_or_else(|| det.species.clone())
+            } else {
+                det.species.clone()
             };
             hit_numbered.push(numbered);
             hit_details.push(DomainInfo {
@@ -236,11 +247,11 @@ fn process_one(
                 bias: det.bias,
                 query_start: det.query_start,
                 query_end: det.query_end,
-                species: det.species.clone(),
+                species,
                 chain_type: det.chain_type.clone(),
                 scheme: scheme.to_string(),
                 query_name: name.to_string(),
-                germlines,
+                germlines: germ,
             });
         }
     }
@@ -299,6 +310,7 @@ pub fn anarci(
     assign_germline: bool,
     allowed_species: Option<&[String]>,
     bit_score_threshold: f64,
+    species_from_germline: bool,
 ) -> CResult<Vec<SeqResult>> {
     let scheme = resolve_scheme(scheme)?;
     sequences
@@ -306,7 +318,7 @@ pub fn anarci(
         .map(|(name, seq)| {
             process_one(
                 engine, name, seq, scheme, allow, assign_germline, allowed_species,
-                bit_score_threshold,
+                bit_score_threshold, species_from_germline,
             )
         })
         .collect()
@@ -322,17 +334,48 @@ pub fn run_anarci(
     assign_germline: bool,
     allowed_species: Option<&[String]>,
     bit_score_threshold: f64,
+    species_from_germline: bool,
 ) -> CResult<Vec<SeqResult>> {
     let scheme = resolve_scheme(scheme)?;
-    sequences
+
+    // Deduplicate identical sequences (lossless: the result depends only on the
+    // sequence; the only per-input field, query_name, is restored per original below).
+    // This is a free win on repetitive inputs (NGS sets often have many duplicates).
+    let mut first_index: std::collections::HashMap<&[u8], usize> = std::collections::HashMap::new();
+    let mut uniques: Vec<(&str, &[u8])> = Vec::new();
+    let mut which: Vec<usize> = Vec::with_capacity(sequences.len());
+    for (name, seq) in sequences {
+        let u = *first_index.entry(seq.as_slice()).or_insert_with(|| {
+            uniques.push((name.as_str(), seq.as_slice()));
+            uniques.len() - 1
+        });
+        which.push(u);
+    }
+
+    let computed: Vec<SeqResult> = uniques
         .par_iter()
         .map(|(name, seq)| {
             process_one(
                 engine, name, seq, scheme, allow, assign_germline, allowed_species,
-                bit_score_threshold,
+                bit_score_threshold, species_from_germline,
             )
         })
-        .collect()
+        .collect::<CResult<Vec<_>>>()?;
+
+    // Replay per original, restoring query_name (the only name-dependent output field).
+    Ok(sequences
+        .iter()
+        .zip(which.iter())
+        .map(|((name, _), &u)| {
+            let mut r = computed[u].clone();
+            if let Some(details) = r.details.as_mut() {
+                for d in details {
+                    d.query_name = name.clone();
+                }
+            }
+            r
+        })
+        .collect())
 }
 
 /// `number`: single sequence -> (numbering, chain class) or None.
@@ -344,6 +387,7 @@ pub fn number(
     scheme: &str,
     allow: &BTreeSet<String>,
     allowed_species: Option<&[String]>,
+    species_from_germline: bool,
 ) -> CResult<Option<(Numbered, String)>> {
     validate_sequence(sequence)?;
     let scheme = resolve_scheme(scheme)?;
@@ -351,7 +395,7 @@ pub fn number(
         return Ok(None);
     }
     let seqs = vec![("sequence_0".to_string(), sequence.to_vec())];
-    let res = match anarci(engine, &seqs, scheme, allow, false, allowed_species, 80.0) {
+    let res = match anarci(engine, &seqs, scheme, allow, false, allowed_species, 80.0, species_from_germline) {
         Ok(r) => r,
         // ANARCI catches AssertionError here (e.g. TCR with antibody scheme) -> (False, False).
         Err(_) => return Ok(None),

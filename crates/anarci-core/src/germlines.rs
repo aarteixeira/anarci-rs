@@ -200,13 +200,23 @@ pub fn run_germline_assignment(
 
 /// `get_hmm_length`: residues in the first J germline for (species, ctype),
 /// trailing gaps stripped. Missing keys -> 128.
+///
+/// For the pan-species engine the profile "species" is `pan` (not a real species);
+/// we then fall back to the chain's canonical J length (max over species — uniform in
+/// practice: H/A/G/D=128, K/L/B=127), NOT a blind 128, which would shift the J-end
+/// extension by one for kappa/lambda/beta.
 pub fn get_hmm_length(species: &str, ctype: &str) -> usize {
     if let Some(j) = seg("J") {
         if let Some(chain) = j.get(ctype) {
+            let jlen = |glist: &GeneList| glist.first().map(|(_, s)| s.trim_end_matches('-').len());
             if let Some(glist) = chain.get(species) {
-                if let Some((_, s)) = glist.first() {
-                    return s.trim_end_matches('-').len();
+                if let Some(n) = jlen(glist) {
+                    return n;
                 }
+            }
+            // species not found (e.g. "pan"): chain's canonical J length, deterministic.
+            if let Some(n) = chain.values().filter_map(jlen).max() {
+                return n;
             }
         }
     }
