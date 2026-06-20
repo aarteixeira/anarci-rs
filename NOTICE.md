@@ -14,8 +14,9 @@ data produced by the ANARCI build pipeline, pinned from the conda package
   and receptor classification." Bioinformatics (2016).
 
 ## HMMER 3.4 and Easel (HHMI / Sean R. Eddy, Rivas Lab)
-Vendored under `crates/hmmer-sys/vendor/hmmer-3.4/` (with its own `LICENSE`) and
-statically linked into the Python extension.
+Fetched at build time (`hmmer-3.4.tar.gz`, SHA-256-pinned and verified by
+`crates/hmmer-sys/build.rs`) and statically linked into the Python extension.
+The tarball bundles Easel and its own `LICENSE`.
 - Upstream: http://hmmer.org
 - License: BSD-3-Clause.
 

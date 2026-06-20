@@ -80,13 +80,21 @@ maturin build --release          # produce a wheel
 
 ```
 crates/anarci-core   pure Rust: numbering schemes, germline, parse, orchestration
-crates/hmmer-sys     FFI to vendored HMMER 3.4 + Easel (static-linked)
+crates/hmmer-sys     FFI to HMMER 3.4 + Easel (fetched at build time, static-linked)
 crates/anarci-hmm    safe in-process HMM scan engine -> HSPs
 crates/anarci-py     PyO3 module `anarci_rs` (the drop-in API)
 reference_data/      pinned ALL.hmm + germlines (the canonical reference data)
+examples/            example FASTAs (from ANARCI, BSD-3) for the scripts/benchmark
 tests/fixtures/      golden fixtures captured from reference ANARCI
 scripts/             fixture generators + the accuracy/speed benchmark
 ```
+
+### Build-time HMMER fetch
+`hmmer-sys/build.rs` downloads `hmmer-3.4.tar.gz` (SHA-256-pinned, verified) and
+compiles it once into `OUT_DIR`. The first build (and any build after `cargo clean`)
+needs network + a C toolchain (`curl`, `tar`, `make`, a C compiler). For offline/CI
+builds, point `HMMER_TARBALL` at a local copy of the official tarball:
+`HMMER_TARBALL=/path/to/hmmer-3.4.tar.gz maturin build --release`.
 
 ## Benchmark
 

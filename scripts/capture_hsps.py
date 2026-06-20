@@ -5,14 +5,13 @@ the Rust port of parse_hmmer_query + hmm_alignment_to_states must reproduce the
 state_vectors and details from the SAME hsps. (State vectors here are BEFORE
 check_for_j, which is validated later with the engine.)
 
-  /Users/Andre.Teixeira/miniforge3/envs/anarci-ref/bin/python scripts/capture_hsps.py
+  python scripts/capture_hsps.py
 """
 import os, sys, gzip, json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-sys.path.insert(0, "/tmp")
 from gen_golden import load_sequences, jsonable, SPECIES, BIT_THRESHOLD  # reuse loader
 
 import importlib

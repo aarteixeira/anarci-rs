@@ -2,7 +2,7 @@
 """Emit the two large numbering constants (alphabet, blosum62) as a Rust source file,
 straight from the reference package so there is zero hand-transcription risk.
 
-  /Users/Andre.Teixeira/miniforge3/envs/anarci-ref/bin/python scripts/gen_constants.py
+  python scripts/gen_constants.py
 """
 import os
 from anarci import schemes as S

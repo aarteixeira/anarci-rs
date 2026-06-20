@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """Generate golden correctness fixtures from REFERENCE ANARCI (conda anarci 2024.05.21).
 
-Run with the reference env:
-  /Users/Andre.Teixeira/miniforge3/envs/anarci-ref/bin/python scripts/gen_golden.py
+Run with a Python that has reference ANARCI installed (e.g. `conda install -c bioconda
+anarci`):
+  python scripts/gen_golden.py
+Override the example-FASTA dir with $ANARCI_RS_EXAMPLES (defaults to ./examples).
 
 Captures, per sequence, per identified domain:
   - state_vector (engine boundary) + alignment scalars  -> Phase 2 (engine) oracle
@@ -18,7 +20,8 @@ import os, sys, gzip, json, hashlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-EX = "/tmp/ANARCI_src/Example_scripts_and_sequences"
+# Example FASTAs are bundled in ./examples (from ANARCI, BSD-3 — see NOTICE.md).
+EX = os.environ.get("ANARCI_RS_EXAMPLES", os.path.join(ROOT, "examples"))
 
 # All 7 supported species, least-restrictive (so every supported chain numbers).
 SPECIES = ['human', 'mouse', 'rat', 'rabbit', 'rhesus', 'pig', 'alpaca']
@@ -63,7 +66,7 @@ def load_sequences():
     for name, s in read_fasta(os.path.join(EX, "lysozyme.fasta")):
         add("neg_" + name.split()[0], s)
     # 4) hand-picked edge cases (incl. TCR a/b, scFv multi-domain, long CDR3, too-short)
-    sys.path.insert(0, "/tmp")
+    sys.path.insert(0, HERE)
     from edge_cases import EDGE_CASES
     for name, s in EDGE_CASES:
         add(name, s)

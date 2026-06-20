@@ -8,14 +8,13 @@ Produces:
   tests/fixtures/endtoend_imgt.json.gz : reference anarci() output (numbered,
       details, hit_table) per sequence for scheme=imgt, assign_germline=True.
 
-  /Users/Andre.Teixeira/miniforge3/envs/anarci-ref/bin/python scripts/gen_endtoend.py
+  python scripts/gen_endtoend.py
 """
 import os, sys, gzip, json, importlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-sys.path.insert(0, "/tmp")
 from gen_golden import load_sequences, jsonable, SPECIES, BIT_THRESHOLD
 
 A = importlib.import_module("anarci.anarci")

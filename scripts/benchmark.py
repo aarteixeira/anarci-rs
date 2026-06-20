@@ -2,17 +2,20 @@
 """Benchmark anarci-rs vs reference ANARCI: ACCURACY (byte-for-byte) and SPEED.
 
 Run in an env that has BOTH `anarci` (reference, conda 2024.05.21) and `anarci_rs`
-(this project's wheel) installed, e.g. after `maturin develop` into the anarci-ref env:
+(this project's wheel) installed, e.g. after `maturin develop` / `pip install`:
 
-  /Users/Andre.Teixeira/miniforge3/envs/anarci-ref/bin/python scripts/benchmark.py --accuracy
-  /Users/Andre.Teixeira/miniforge3/envs/anarci-ref/bin/python scripts/benchmark.py --speed
+  python scripts/benchmark.py --accuracy
+  python scripts/benchmark.py --speed
 
 The drop-in contract: anarci_rs exposes run_anarci / anarci / number with identical
 signatures and return shapes; this script uses the SAME call for both modules.
+Override the example-FASTA dir with $ANARCI_RS_EXAMPLES (defaults to ./examples).
 """
 import argparse, sys, time, os, json
 
-EX = "/tmp/ANARCI_src/Example_scripts_and_sequences"
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+EX = os.environ.get("ANARCI_RS_EXAMPLES", os.path.join(ROOT, "examples"))
 SCHEMES = ["imgt", "chothia", "kabat", "martin", "aho", "wolfguy"]
 SPECIES = ['human', 'mouse', 'rat', 'rabbit', 'rhesus', 'pig', 'alpaca']
 # CLI behaviour: antibody schemes ignore TCR chains (else AssertionError on A/B/G/D).

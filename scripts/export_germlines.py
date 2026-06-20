@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Serialize the pinned germlines.py `all_germlines` dict to JSON for Rust.
 
-  /Users/Andre.Teixeira/miniforge3/envs/anarci-ref/bin/python scripts/export_germlines.py
+  python scripts/export_germlines.py
 
 CRITICAL: gene insertion order is PRESERVED. `run_germline_assignment` picks the
 germline via `max(...)`, which breaks ties by first-in-iteration-order, and many
