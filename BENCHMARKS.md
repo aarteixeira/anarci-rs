@@ -111,8 +111,17 @@ On V-gene disagreements, the e-value call matches `riot_na` where identity doesn
 (35 vs 5). It changes only `v_gene`/`j_gene` (+ `v_evalue`/`j_evalue`), never the numbering.
 Honest limits: the RIOT-paper "97%" is not reproduced — the residual gap is the germline DB
 (we use ANARCI's IMGT, riot_na uses OGRDB, whose mouse IDs can't name-match IMGT), and there
-is no public curated residue/germline gold standard. Cost: ~10× the identity path per domain,
-so it is **opt-in** (the pan engine's default species label uses the fast identity path).
+is no public curated residue/germline gold standard.
+
+**It is now the pan-engine default.** The original brute-force e-value path was ~24 ms/domain
+(~10× identity); a **k-mer prefilter (reduced-alphabet seeds, top-128) + a bit-exact SIMD
+Smith-Waterman kernel** (inter-sequence, `wide` crate) cut that to ~6 ms/domain (~4×). The
+prefilter is recall-tuned and produces **identical calls to the full brute-force** (verified:
+2026 domain×scope comparisons across 996 sequences, 0 v/j mismatches), with an exact full-scan
+fallback. End-to-end pan throughput is ~427→312 seq/s single-thread (identity→e-value germline)
+— so accurate germline genes are now the default at minor cost. The exact `database="ALL"`
+engine keeps identity germline for byte-for-byte ANARCI parity. (`germline_method=` overrides.)
+SIMD SW is exact (proven == scalar on 20k random + 3k mixed-length-batch cases).
 
 ### The other wins (not in the table)
 - **Zero runtime dependencies**: HMMER is statically linked and `ALL.hmm` is embedded in the

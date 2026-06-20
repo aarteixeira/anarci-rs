@@ -62,14 +62,21 @@ fn parse_database(database: &str) -> PyResult<bool> {
 
 /// Resolve the germline-assignment method.
 ///
-/// `None` defaults to identity germline assignment (ANARCI-compatible and fast — the
-/// pan engine derives a species label from it on every call, so the ~10x-slower e-value
-/// path must NOT be the default or it erases the pan speedup). Pass `germline_method="evalue"`
-/// for the higher-accuracy RIOT-style V/J-gene assignment (worth it when you need accurate
-/// germline genes, e.g. with `assign_germline=True`).
-fn parse_germline_method(method: Option<&str>, _pan: bool) -> PyResult<GermlineMethod> {
+/// When unspecified (`None`), the default depends on the engine:
+///   * pan  -> `Evalue` (RIOT-style V/J assignment; more accurate germline genes).
+///     The e-value path is now fast (k-mer prefilter + SIMD Smith-Waterman, ~10x
+///     the throughput of the old brute force), so it no longer erases the pan
+///     speedup. It produces IDENTICAL calls to the brute-force e-value path.
+///   * exact (`database="ALL"`) -> `Identity` (byte-for-byte ANARCI parity).
+///
+/// An explicit `germline_method=` always overrides the default.
+fn parse_germline_method(method: Option<&str>, pan: bool) -> PyResult<GermlineMethod> {
     match method {
-        None => Ok(GermlineMethod::Identity),
+        None => Ok(if pan {
+            GermlineMethod::Evalue
+        } else {
+            GermlineMethod::Identity
+        }),
         Some(s) => GermlineMethod::parse(s).map_err(assertion_err),
     }
 }

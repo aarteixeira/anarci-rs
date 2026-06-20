@@ -1,6 +1,7 @@
 //! Germline assignment — a faithful port of ANARCI's `get_identity`,
 //! `run_germline_assignment`, and `get_hmm_length`.
 
+use crate::simd_sw;
 use crate::sw;
 use crate::types::{State, StateType, StateVector};
 use once_cell::sync::Lazy;
@@ -338,6 +339,269 @@ fn best_gene_evalue<'a>(
     best
 }
 
+// ===========================================================================
+// Fast e-value path: k-mer prefilter -> SIMD SW on candidates -> exact select.
+//
+// Within a single V (or J) search the e-value DB length `db_len` is constant, so
+// `E = m * db_len * 2^(-score)` is strictly monotone-decreasing in `score`. The
+// winner is therefore: max score, ties broken by min (species, gene) — exactly
+// the total order `best_gene_evalue` applies. The fast path computes the *same*
+// scores (via the bit-exact SIMD kernel) on a candidate subset and selects under
+// that same total order; it is identical to the full scan iff the candidate set
+// contains the true winner. A k-mer prefilter chooses the candidates, an exact
+// full-scan path is always available, and a recall test gates equality on the
+// whole golden set.
+// ===========================================================================
+
+/// A flat reference into the gene DB: `(species, gene_name, ungapped_seq)`.
+type GeneRef<'a> = (&'a str, &'a str, &'a [u8]);
+
+/// One scored candidate, carrying everything needed for selection / return.
+struct Scored<'a> {
+    species: &'a str,
+    gene: &'a str,
+    score: i32,
+}
+
+/// Apply the exact `best_gene_evalue` total order to scored candidates and return
+/// the winner. Order-independent (it's a strict total order on distinct
+/// (species, gene) pairs), so it matches the full scan regardless of input order.
+/// `db_len` only sets the returned e-value (selection depends on score alone here).
+fn select_best_scored(
+    cands: &[Scored<'_>],
+    query_len: usize,
+    db_len: usize,
+) -> Option<(String, String, f64, i32)> {
+    let mut best: Option<&Scored<'_>> = None;
+    for c in cands {
+        let take = match best {
+            None => true,
+            Some(b) => {
+                // ev monotone in score (db_len fixed): higher score = lower ev.
+                if c.score != b.score {
+                    c.score > b.score
+                } else if c.species != b.species {
+                    c.species < b.species
+                } else {
+                    c.gene < b.gene
+                }
+            }
+        };
+        if take {
+            best = Some(c);
+        }
+    }
+    best.map(|b| {
+        let ev = sw::evalue(b.score, query_len, db_len.max(1));
+        (b.species.to_string(), b.gene.to_string(), ev, b.score)
+    })
+}
+
+/// Score a flat candidate list against `query` with the SIMD batched kernel
+/// (8 genes per pass), bit-exact with `sw::local_score`.
+fn score_candidates_simd<'a>(query: &[u8], cands: &[GeneRef<'a>]) -> Vec<Scored<'a>> {
+    let seqs: Vec<&[u8]> = cands.iter().map(|(_, _, s)| *s).collect();
+    let scores = simd_sw::local_score_many(query, &seqs);
+    cands
+        .iter()
+        .zip(scores)
+        .map(|((sp, g, _), sc)| Scored { species: sp, gene: g, score: sc as i32 })
+        .collect()
+}
+
+// --- k-mer prefilter index -------------------------------------------------
+
+/// k-mer length for the prefilter seeds (short, for high recall).
+const KMER_K: usize = 4;
+/// Number of top candidates to keep from the prefilter (generous; the DB is tiny,
+/// so even top-128 of ~1000 is ~8x fewer SW than a full scan). Recall=1.0 on the
+/// golden set is gated by a test; raise this if that test ever fails.
+const TOP_K: usize = 128;
+
+/// Reduced amino-acid alphabet (Murphy-8-like grouping) for recall-safe seeding.
+/// Mapping over `byte - b'A'` (A..Z); each standard residue -> a group 0..7,
+/// non-residues -> 7 (lumped, never hit on validated input). Grouping conserved
+/// physicochemical classes so a single substitution rarely breaks every seed.
+///   {L,V,I,M,C} {A,G,S,T,P} {F,Y,W} {E,D,N,Q} {K,R} {H} ... lumped to 7 groups.
+#[inline]
+fn reduced_code(b: u8) -> u8 {
+    match b.to_ascii_uppercase() {
+        b'L' | b'V' | b'I' | b'M' | b'C' => 0,
+        b'A' | b'G' | b'S' | b'T' | b'P' => 1,
+        b'F' | b'Y' | b'W' => 2,
+        b'E' | b'D' | b'N' | b'Q' => 3,
+        b'K' | b'R' => 4,
+        b'H' => 5,
+        _ => 6,
+    }
+}
+/// Number of reduced groups (radix for the k-mer integer code).
+const RADIX: u32 = 7;
+
+/// Encode the set of distinct reduced k-mers in a sequence as a sorted Vec of
+/// codes (base-RADIX). Small k keeps the code space tiny (7^4 = 2401).
+fn kmer_set(seq: &[u8]) -> Vec<u32> {
+    if seq.len() < KMER_K {
+        return Vec::new();
+    }
+    let mut codes: Vec<u32> = Vec::with_capacity(seq.len());
+    let mut code = 0u32;
+    for (i, &b) in seq.iter().enumerate() {
+        code = code * RADIX + reduced_code(b) as u32;
+        if i + 1 >= KMER_K {
+            codes.push(code);
+            // strip the highest digit for the sliding window
+            code -= reduced_code(seq[i + 1 - KMER_K]) as u32 * RADIX.pow(KMER_K as u32 - 1);
+        }
+    }
+    codes.sort_unstable();
+    codes.dedup();
+    codes
+}
+
+/// Prefilter index for one (seg, chain): an inverted list k-mer-code -> gene ids,
+/// plus the flat gene table the ids point into.
+struct ChainIndex {
+    /// Flat gene table: (species, gene, ungapped_seq), stable order.
+    genes: Vec<(String, String, Vec<u8>)>,
+    /// kmer code -> list of gene indices containing that code (sorted, deduped).
+    postings: HashMap<u32, Vec<u32>>,
+}
+
+impl ChainIndex {
+    fn build(chain_map: &HashMap<String, Vec<UngappedGene>>, species_order: &[String]) -> Self {
+        // Flatten in a deterministic order: species_order, then gene order.
+        let mut genes: Vec<(String, String, Vec<u8>)> = Vec::new();
+        for sp in species_order {
+            if let Some(glist) = chain_map.get(sp) {
+                for (g, seq) in glist {
+                    genes.push((sp.clone(), g.clone(), seq.clone()));
+                }
+            }
+        }
+        let mut postings: HashMap<u32, Vec<u32>> = HashMap::new();
+        for (gid, (_, _, seq)) in genes.iter().enumerate() {
+            for code in kmer_set(seq) {
+                postings.entry(code).or_default().push(gid as u32);
+            }
+        }
+        ChainIndex { genes, postings }
+    }
+
+    /// Top-K gene indices for `query` by distinct-k-mer seed-hit count (descending),
+    /// ties broken by gene index (deterministic). Returns at most `TOP_K`.
+    fn top_candidates(&self, query: &[u8]) -> Vec<u32> {
+        let mut hits = vec![0u32; self.genes.len()];
+        for code in kmer_set(query) {
+            if let Some(list) = self.postings.get(&code) {
+                for &gid in list {
+                    hits[gid as usize] += 1;
+                }
+            }
+        }
+        // Indices with >0 hits, ranked by (hits desc, gid asc). Quickselect the
+        // top-K boundary (O(n)) then sort only the kept prefix — same deterministic
+        // order as a full sort, but without paying O(n log n) over ~1000 genes.
+        let cmp = |a: &u32, b: &u32| {
+            hits[*b as usize]
+                .cmp(&hits[*a as usize])
+                .then_with(|| a.cmp(b))
+        };
+        let mut ranked: Vec<u32> = (0..self.genes.len() as u32)
+            .filter(|&g| hits[g as usize] > 0)
+            .collect();
+        if ranked.len() > TOP_K {
+            ranked.select_nth_unstable_by(TOP_K - 1, cmp);
+            ranked.truncate(TOP_K);
+        }
+        ranked.sort_unstable_by(cmp);
+        ranked
+    }
+}
+
+/// Lazily-built prefilter indices: seg -> chain -> ChainIndex (over all species,
+/// in canonical `all_species()` order). Built once, shared across calls.
+static INDEX: Lazy<HashMap<String, HashMap<String, ChainIndex>>> = Lazy::new(|| {
+    let order = all_species().to_vec();
+    let mut out: HashMap<String, HashMap<String, ChainIndex>> = HashMap::new();
+    for (seg_name, chains) in &UNGAPPED.map {
+        let seg_out = out.entry(seg_name.clone()).or_default();
+        for (chain, species_map) in chains {
+            seg_out.insert(chain.clone(), ChainIndex::build(species_map, &order));
+        }
+    }
+    out
+});
+
+fn chain_index<'a>(seg: &str, chain: &str) -> Option<&'a ChainIndex> {
+    INDEX.get(seg).and_then(|c| c.get(chain))
+}
+
+/// Fast e-value winner for a V/J search: k-mer prefilter -> SIMD SW on top-K
+/// candidates -> exact total-order select. Falls back to the full SIMD scan when
+/// the species scope isn't the full DB (the index covers all species in canonical
+/// order; a restricted scope is handled by the exact scan, which is still SIMD-fast).
+///
+/// `allowed_species == None` means "all species" and uses the index. An explicit
+/// list uses the exact SIMD full scan over just those species (correct + fast).
+/// Returns `(species, gene, e_value, raw_score)`, identical to `best_gene_evalue`.
+fn best_gene_evalue_fast(
+    seg: &str,
+    chain: &str,
+    chain_map: &HashMap<String, Vec<UngappedGene>>,
+    species_list: &[String],
+    query: &[u8],
+    db_len: usize,
+) -> Option<(String, String, f64, i32)> {
+    // Build the flat candidate set (in canonical order for deterministic ties).
+    let use_index = is_full_species_scope(species_list);
+    let idx = if use_index { chain_index(seg, chain) } else { None };
+
+    if let Some(idx) = idx {
+        // Index path: score only the top-K candidates with SIMD SW.
+        let top = idx.top_candidates(query);
+        if !top.is_empty() {
+            let cands: Vec<GeneRef> = top
+                .iter()
+                .map(|&g| {
+                    let (sp, gene, seq) = &idx.genes[g as usize];
+                    (sp.as_str(), gene.as_str(), seq.as_slice())
+                })
+                .collect();
+            let scored = score_candidates_simd(query, &cands);
+            if let Some(w) = select_best_scored(&scored, query.len(), db_len) {
+                return Some(w);
+            }
+        }
+        // Empty seed hits (e.g. query shorter than k): fall through to full scan.
+    }
+
+    // Exact full SIMD scan over the requested species scope.
+    let mut flat: Vec<GeneRef> = Vec::new();
+    for sp in species_list {
+        if let Some(glist) = chain_map.get(sp) {
+            for (g, seq) in glist {
+                flat.push((sp.as_str(), g.as_str(), seq.as_slice()));
+            }
+        }
+    }
+    if flat.is_empty() {
+        return None;
+    }
+    let scored = score_candidates_simd(query, &flat);
+    select_best_scored(&scored, query.len(), db_len)
+}
+
+/// True when `species_list` is exactly the canonical full species set (so the
+/// all-species index applies). Order-insensitive set comparison.
+fn is_full_species_scope(species_list: &[String]) -> bool {
+    let all = all_species();
+    if species_list.len() != all.len() {
+        return false;
+    }
+    all.iter().all(|s| species_list.contains(s))
+}
+
 /// Ungapped sequence of a named gene in the ungapped DB, or `None`.
 fn ungapped_gene_seq<'a>(seg: &str, chain: &str, species: &str, gene: &str) -> Option<&'a [u8]> {
     ungapped_chain(seg, chain)?
@@ -365,17 +629,76 @@ fn ungapped_gene_seq<'a>(seg: &str, chain: &str, species: &str, gene: &str) -> O
 /// chain yields the empty dict (ANARCI semantics). J is searched only within the
 /// chosen V gene's species (as in both ANARCI and RIOT).
 ///
-/// Cost: full SW against every allowed V gene (~1–2k genes), exactly (no lossy
-/// prefilter — the e-value winner is the top SW score, kept exact). This is
-/// ~10× the identity path single-threaded (~20 ms/domain across 8 species), but
-/// `run_anarci` parallelises across sequences, so the default multi-core wall
-/// time is comparable to the identity path. Restrict `allowed_species` to shrink
-/// the DB when speed matters.
+/// Speed: this uses a k-mer prefilter (recall-safe reduced-alphabet seeds) to pick
+/// the top-K candidate V genes, then scores only those with a bit-exact SIMD
+/// Smith-Waterman kernel (8 genes per pass) and selects by e-value. It returns the
+/// IDENTICAL call to a full scalar brute-force scan ([`run_germline_assignment_evalue_exact`]):
+/// because the per-search DB length is constant, the e-value winner is just the
+/// max-SW-score gene (lex tie-break), and the prefilter is verified (test) to keep
+/// the true winner in top-K for the whole golden set (recall = 1.0). About 4x the
+/// throughput of the brute force single-thread (~6 ms/domain vs ~24 ms); J is a
+/// small per-species set scanned directly with SIMD. Falls back to the exact SIMD
+/// full scan automatically for restricted species scopes.
 pub fn run_germline_assignment_evalue(
     state_vector: &StateVector,
     sequence: &[u8],
     chain_type: &str,
     allowed_species: Option<&[String]>,
+) -> Germline {
+    assign_evalue(state_vector, sequence, chain_type, allowed_species, ScanMode::Fast)
+}
+
+/// EXACT (always-correct) e-value germline assignment: full scalar Smith-Waterman
+/// scan over every allowed gene, no prefilter or SIMD. This is the reference path
+/// [`run_germline_assignment_evalue`] must match bit-for-bit; it exists as a slow
+/// oracle and a guaranteed-correct fallback. Same arguments/semantics/output.
+pub fn run_germline_assignment_evalue_exact(
+    state_vector: &StateVector,
+    sequence: &[u8],
+    chain_type: &str,
+    allowed_species: Option<&[String]>,
+) -> Germline {
+    assign_evalue(state_vector, sequence, chain_type, allowed_species, ScanMode::ExactScalar)
+}
+
+/// How the e-value path scores genes. `Fast` = k-mer prefilter + SIMD SW (default);
+/// `ExactScalar` = full scalar Gotoh scan (reference oracle / fallback). Both
+/// select the winner under the identical total order, so they return the same call.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ScanMode {
+    Fast,
+    ExactScalar,
+}
+
+/// Find the e-value winner for one V/J search under `mode`.
+fn winner(
+    mode: ScanMode,
+    seg: &str,
+    chain: &str,
+    chain_map: &HashMap<String, Vec<UngappedGene>>,
+    species_list: &[String],
+    query: &[u8],
+    db_len: usize,
+) -> Option<(String, String, f64, i32)> {
+    match mode {
+        ScanMode::Fast => {
+            best_gene_evalue_fast(seg, chain, chain_map, species_list, query, db_len)
+        }
+        ScanMode::ExactScalar => {
+            let iter = species_list
+                .iter()
+                .filter_map(|sp| chain_map.get(sp).map(|gl| (sp.as_str(), gl.as_slice())));
+            best_gene_evalue(iter, query, db_len)
+        }
+    }
+}
+
+fn assign_evalue(
+    state_vector: &StateVector,
+    sequence: &[u8],
+    chain_type: &str,
+    allowed_species: Option<&[String]>,
+    mode: ScanMode,
 ) -> Germline {
     let mut genes = Germline::default_dict();
 
@@ -411,11 +734,8 @@ pub fn run_germline_assignment_evalue(
         .flat_map(|gl| gl.iter())
         .map(|(_, s)| s.len())
         .sum();
-    let v_iter = species_list
-        .iter()
-        .filter_map(|sp| v_chain.get(sp).map(|gl| (sp.as_str(), gl.as_slice())));
     let (v_species, v_gene, v_ev, _v_score) =
-        match best_gene_evalue(v_iter, &v_query, v_db_len) {
+        match winner(mode, "V", chain_type, v_chain, species_list, &v_query, v_db_len) {
             Some(t) => t,
             None => return genes,
         };
@@ -429,10 +749,12 @@ pub fn run_germline_assignment_evalue(
     // --- J gene: SW over the V species' J genes only (RIOT/ANARCI behaviour). ---
     if !j_query.is_empty() {
         if let Some(j_chain) = ungapped_chain("J", chain_type) {
-            if let Some(jgenes) = j_chain.get(&v_species) {
-                let j_db_len: usize = jgenes.iter().map(|(_, s)| s.len()).sum();
-                let one = std::iter::once((v_species.as_str(), jgenes.as_slice()));
-                if let Some((_, j_gene, j_ev, _)) = best_gene_evalue(one, &j_query, j_db_len) {
+            if j_chain.contains_key(&v_species) {
+                let j_db_len: usize = j_chain[&v_species].iter().map(|(_, s)| s.len()).sum();
+                let one = [v_species.clone()];
+                if let Some((_, j_gene, j_ev, _)) =
+                    winner(mode, "J", chain_type, j_chain, &one, &j_query, j_db_len)
+                {
                     genes.j_identity = ungapped_gene_seq("J", chain_type, &v_species, &j_gene)
                         .map(|gseq| sw::local_identity(&j_query, gseq).0);
                     genes.j_gene = Some((v_species, j_gene));

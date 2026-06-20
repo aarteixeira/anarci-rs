@@ -9,12 +9,14 @@ pub mod constants;
 pub mod germlines;
 pub mod orchestrate;
 pub mod schemes;
+pub mod simd_sw;
 pub mod sw;
 pub mod types;
 
 pub use align::{hmm_alignment_to_states, parse_hmmer_query, DomainDetails, Hsp, ParsedQuery};
 pub use germlines::{
-    get_hmm_length, get_identity, run_germline_assignment, run_germline_assignment_evalue, Germline,
+    get_hmm_length, get_identity, run_germline_assignment, run_germline_assignment_evalue,
+    run_germline_assignment_evalue_exact, Germline,
 };
 pub use orchestrate::{
     anarci, chain_type_to_class, default_allow, number, resolve_scheme, run_anarci, validate_sequence,

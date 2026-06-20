@@ -34,12 +34,16 @@ Use `database="ALL"` whenever you need output byte-identical to stock ANARCI.
 
 `assign_germline=True` reports the closest V/J germline genes. Two methods:
 
-- `germline_method="identity"` (default) — ANARCI's sequence-identity match. Fast.
+- `germline_method="identity"` — ANARCI's sequence-identity match. The default for the
+  exact `database="ALL"` engine (byte-for-byte ANARCI parity).
 - `germline_method="evalue"` — RIOT-style Smith-Waterman + Karlin-Altschul e-value
   alignment to the ungapped germline genes. **More accurate** (human V-gene agreement with
   the RIOT tool rises 66.8%→75.4%, J-gene 75.9%→88.5%; on disagreements the e-value call is
-  right ~7:1), at ~10× the germline cost — worth it when you need accurate genes. It does not
-  change residue numbering, only the reported `v_gene`/`j_gene` (+ `v_evalue`/`j_evalue`).
+  right ~7:1). The **default for the pan engine** (`database="pan"`): a k-mer prefilter plus a
+  bit-exact SIMD Smith-Waterman kernel make it fast enough to default (end-to-end pan
+  throughput drops only ~427→312 seq/s single-thread vs identity germline, still well above
+  the identity-pan target). It does not change residue numbering, only the reported
+  `v_gene`/`j_gene` (+ `v_evalue`/`j_evalue`). Pass an explicit `germline_method=` to override.
 
 ```python
 seqs, numbered, details, hits = anarci.run_anarci(
