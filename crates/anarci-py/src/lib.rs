@@ -223,7 +223,7 @@ fn opt_f64<'py>(py: Python<'py>, v: Option<f64>) -> PyResult<Bound<'py, PyAny>> 
     })
 }
 
-fn detail_to_py<'py>(py: Python<'py>, d: &DomainInfo) -> PyResult<Bound<'py, PyAny>> {
+fn detail_to_py<'py>(py: Python<'py>, d: &DomainInfo, annotate_regions: bool) -> PyResult<Bound<'py, PyAny>> {
     let dict = PyDict::new(py);
     dict.set_item("id", &d.id)?;
     dict.set_item("description", &d.description)?;
@@ -238,6 +238,20 @@ fn detail_to_py<'py>(py: Python<'py>, d: &DomainInfo) -> PyResult<Bound<'py, PyA
     dict.set_item("query_name", &d.query_name)?;
     if let Some(g) = &d.germlines {
         dict.set_item("germlines", germline_to_py(py, g)?)?;
+    }
+    // F1a: IMGT region-completeness annotation. Opt-in so the default dict stays
+    // byte-identical to reference ANARCI (drop-in parity).
+    if annotate_regions {
+        let regions = PyDict::new(py);
+        for (name, status) in d.regions.pairs() {
+            regions.set_item(name, status.as_str())?;
+        }
+        dict.set_item("regions", regions)?;
+        let covered = match d.regions.covered_imgt {
+            Some((lo, hi)) => PyTuple::new(py, [lo, hi])?.into_any(),
+            None => py.None().into_bound(py),
+        };
+        dict.set_item("covered_imgt", covered)?;
     }
     Ok(dict.into_any())
 }
@@ -270,6 +284,7 @@ fn hit_table_to_py<'py>(py: Python<'py>, rows: &[anarci_core::align::HitRow]) ->
 fn results_to_py<'py>(
     py: Python<'py>,
     results: &[SeqResult],
+    annotate_regions: bool,
 ) -> PyResult<(Bound<'py, PyList>, Bound<'py, PyList>, Bound<'py, PyList>)> {
     let mut numbered: Vec<Bound<'py, PyAny>> = Vec::with_capacity(results.len());
     let mut details: Vec<Bound<'py, PyAny>> = Vec::with_capacity(results.len());
@@ -287,7 +302,7 @@ fn results_to_py<'py>(
             None => details.push(py.None().into_bound(py)),
             Some(ds) => {
                 let v: Vec<Bound<'py, PyAny>> =
-                    ds.iter().map(|d| detail_to_py(py, d)).collect::<PyResult<_>>()?;
+                    ds.iter().map(|d| detail_to_py(py, d, annotate_regions)).collect::<PyResult<_>>()?;
                 details.push(PyList::new(py, v)?.into_any());
             }
         }
@@ -343,7 +358,8 @@ fn run_core(
 #[pyfunction]
 #[pyo3(signature = (sequences, scheme="imgt", database="pan", output=false, outfile=None,
     csv=false, allow=None, hmmerpath="", ncpu=None, assign_germline=false,
-    allowed_species=None, bit_score_threshold=80.0, germline_method=None))]
+    allowed_species=None, bit_score_threshold=80.0, germline_method=None,
+    annotate_regions=false))]
 fn anarci<'py>(
     py: Python<'py>,
     sequences: &Bound<'py, PyAny>,
@@ -359,6 +375,7 @@ fn anarci<'py>(
     allowed_species: Option<&Bound<'py, PyAny>>,
     bit_score_threshold: f64,
     germline_method: Option<&str>,
+    annotate_regions: bool,
 ) -> PyResult<Bound<'py, PyTuple>> {
     let _ = (output, outfile, csv, hmmerpath); // accepted for signature parity
     let pan = parse_database(database)?;
@@ -370,7 +387,7 @@ fn anarci<'py>(
         py, &seqs, scheme, &allow, assign_germline, species.as_deref(),
         bit_score_threshold, ncpu.unwrap_or(1), pan, gmethod,
     )?;
-    let (n, d, h) = results_to_py(py, &results)?;
+    let (n, d, h) = results_to_py(py, &results, annotate_regions)?;
     PyTuple::new(py, [n.into_any(), d.into_any(), h.into_any()])
 }
 
@@ -378,7 +395,8 @@ fn anarci<'py>(
 #[pyfunction]
 #[pyo3(signature = (seq, scheme="imgt", database="pan", output=false, outfile=None,
     csv=false, allow=None, hmmerpath="", ncpu=1, assign_germline=false,
-    allowed_species=None, bit_score_threshold=80.0, germline_method=None))]
+    allowed_species=None, bit_score_threshold=80.0, germline_method=None,
+    annotate_regions=false))]
 fn run_anarci<'py>(
     py: Python<'py>,
     seq: &Bound<'py, PyAny>,
@@ -394,6 +412,7 @@ fn run_anarci<'py>(
     allowed_species: Option<&Bound<'py, PyAny>>,
     bit_score_threshold: f64,
     germline_method: Option<&str>,
+    annotate_regions: bool,
 ) -> PyResult<Bound<'py, PyTuple>> {
     let _ = (output, outfile, csv, hmmerpath);
     let pan = parse_database(database)?;
@@ -415,7 +434,7 @@ fn run_anarci<'py>(
         py, &seqs, scheme, &allow, assign_germline, species.as_deref(),
         bit_score_threshold, ncpu.max(1), pan, gmethod,
     )?;
-    let (n, d, h) = results_to_py(py, &results)?;
+    let (n, d, h) = results_to_py(py, &results, annotate_regions)?;
     // Sequences out: [(id, seq_str), ...]
     let seq_list: Vec<Bound<'py, PyAny>> = seqs
         .iter()
@@ -430,7 +449,8 @@ fn run_anarci<'py>(
 
 #[pyfunction]
 #[pyo3(signature = (sequence, scheme="imgt", database="pan", allow=None,
-    allowed_species=vec!["human".into(), "mouse".into()]))]
+    allowed_species=vec!["human".into(), "mouse".into()], min_length=70,
+    bit_score_threshold=80.0))]
 fn number<'py>(
     py: Python<'py>,
     sequence: &str,
@@ -438,17 +458,42 @@ fn number<'py>(
     database: &str,
     allow: Option<&Bound<'py, PyAny>>,
     allowed_species: Vec<String>,
+    min_length: usize,
+    bit_score_threshold: f64,
 ) -> PyResult<Bound<'py, PyTuple>> {
     let pan = parse_database(database)?;
     let allow = parse_allow(allow)?;
     let species = if allowed_species.is_empty() { None } else { Some(allowed_species) };
     let eng = engine(pan)?;
+    let byte_len = sequence.as_bytes().len();
     let out = py.allow_threads(|| {
-        anarci_core::number(&Adapter(eng), sequence.as_bytes(), scheme, &allow, species.as_deref(), pan)
+        anarci_core::number(
+            &Adapter(eng), sequence.as_bytes(), scheme, &allow, species.as_deref(), pan,
+            min_length, bit_score_threshold,
+        )
     });
     match out {
-        Err(_) => Ok(PyTuple::new(py, [false, false])?), // scheme/chain error -> (False, False)
-        Ok(None) => Ok(PyTuple::new(py, [false, false])?),
+        // Scheme/chain AssertionError -> (False, False), silent, exactly as ANARCI.
+        Err(_) => Ok(PyTuple::new(py, [false, false])?),
+        // F1b: no numbering. Surface *why* via a UserWarning (return value stays the
+        // byte-identical (False, False)) so the rejection is never silent.
+        Ok(None) => {
+            let reason = if byte_len < min_length {
+                format!(
+                    "anarci_rs.number: sequence length {byte_len} < min_length {min_length}; \
+                     no numbering returned. Pass a smaller min_length= to number short/partial fragments."
+                )
+            } else {
+                format!(
+                    "anarci_rs.number: no domain scored >= bit_score_threshold {bit_score_threshold} \
+                     (or no recognizable variable domain); no numbering returned. \
+                     Lower bit_score_threshold= to number marginal/partial fragments."
+                )
+            };
+            let cat = py.get_type::<pyo3::exceptions::PyUserWarning>();
+            PyErr::warn(py, &cat, &std::ffi::CString::new(reason)?, 1)?;
+            Ok(PyTuple::new(py, [false, false])?)
+        }
         Ok(Some((num, class))) => {
             let numbering = numbering_to_py(py, &num)?;
             // number() returns just the numbering list (not the (num,start,end) tuple).

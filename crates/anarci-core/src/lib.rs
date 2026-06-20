@@ -8,6 +8,7 @@ pub mod align;
 pub mod constants;
 pub mod germlines;
 pub mod orchestrate;
+pub mod regions;
 pub mod schemes;
 pub mod simd_sw;
 pub mod sw;
@@ -22,5 +23,6 @@ pub use orchestrate::{
     anarci, chain_type_to_class, default_allow, number, resolve_scheme, run_anarci, validate_sequence,
     DomainInfo, GermlineMethod, HmmEngine, SeqResult,
 };
+pub use regions::{annotate_regions, RegionAnnotation, RegionStatus, IMGT_REGIONS};
 pub use schemes::number_sequence_from_alignment;
 pub use types::{CResult, CoreError, Numbered, Res, State, StateType, StateVector};
