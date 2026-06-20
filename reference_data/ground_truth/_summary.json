@@ -1,0 +1,73 @@
+{
+ "total_inputs": 66,
+ "schemes": {
+  "imgt": {
+   "numbered": 63,
+   "none": 3,
+   "none_ids": [
+    "lyso_2LYZ:A|PDBID|CHAIN|SEQUENCE",
+    "edge_too_short",
+    "edge_lysozyme_negctrl"
+   ],
+   "bytes": 1074240
+  },
+  "chothia": {
+   "numbered": 61,
+   "none": 5,
+   "none_ids": [
+    "lyso_2LYZ:A|PDBID|CHAIN|SEQUENCE",
+    "edge_TCR_alpha",
+    "edge_TCR_beta",
+    "edge_too_short",
+    "edge_lysozyme_negctrl"
+   ],
+   "bytes": 947733
+  },
+  "kabat": {
+   "numbered": 61,
+   "none": 5,
+   "none_ids": [
+    "lyso_2LYZ:A|PDBID|CHAIN|SEQUENCE",
+    "edge_TCR_alpha",
+    "edge_TCR_beta",
+    "edge_too_short",
+    "edge_lysozyme_negctrl"
+   ],
+   "bytes": 947607
+  },
+  "martin": {
+   "numbered": 61,
+   "none": 5,
+   "none_ids": [
+    "lyso_2LYZ:A|PDBID|CHAIN|SEQUENCE",
+    "edge_TCR_alpha",
+    "edge_TCR_beta",
+    "edge_too_short",
+    "edge_lysozyme_negctrl"
+   ],
+   "bytes": 947670
+  },
+  "aho": {
+   "numbered": 63,
+   "none": 3,
+   "none_ids": [
+    "lyso_2LYZ:A|PDBID|CHAIN|SEQUENCE",
+    "edge_too_short",
+    "edge_lysozyme_negctrl"
+   ],
+   "bytes": 1232519
+  },
+  "wolfguy": {
+   "numbered": 61,
+   "none": 5,
+   "none_ids": [
+    "lyso_2LYZ:A|PDBID|CHAIN|SEQUENCE",
+    "edge_TCR_alpha",
+    "edge_TCR_beta",
+    "edge_too_short",
+    "edge_lysozyme_negctrl"
+   ],
+   "bytes": 957421
+  }
+ }
+}

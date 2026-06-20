@@ -1,0 +1,10 @@
+/target
+**/target
+Cargo.lock
+*.pyc
+__pycache__/
+/dist
+*.so
+.venv/
+vendor/**/*.o
+vendor/**/*.a
