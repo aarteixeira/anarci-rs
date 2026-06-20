@@ -123,6 +123,34 @@ fallback. End-to-end pan throughput is ~427→312 seq/s single-thread (identity�
 engine keeps identity germline for byte-for-byte ANARCI parity. (`germline_method=` overrides.)
 SIMD SW is exact (proven == scalar on 20k random + 3k mixed-length-batch cases).
 
+## Partial chains, region annotation & bitscore calibration (F1)
+
+Partial fragments number out of the box (HMMER local alignment). `annotate_regions=True`
+adds an IMGT region-completeness map per domain (FR1..FR4/CDR1..3 = absent/partial/complete
++ covered IMGT span), computed from the state vector — **scheme-independent and ~free** (one
+O(domain-length) pass; no measurable throughput change, verified). It's opt-in, so the
+default output stays byte-identical to reference ANARCI.
+
+**Bitscore calibration (F1c), measured** — full VH and truncations of `1mhp_X`, bitscore of
+the top hit (forced low threshold), reference ANARCI vs anarci-rs `ALL` vs `pan`:
+
+| fragment | ref ANARCI | rs `ALL` | rs `pan` |
+|---|---|---|---|
+| full VH (118 aa) | 195.6 | 209.6 | 176.2 |
+| FR2→end (85 aa) | 141.1 | 148.9 | 116.1 |
+| FR3-CDR3-FR4 (61 aa) | 101.3 | 106.0 | 84.9 |
+
+Two findings, both consistent across fragments: (1) the **pan** engine scores ~16–18% *below*
+reference (it uses 7 merged pan profiles, not 29 per-species ones), so a borderline partial
+can fall under the default threshold 80 on `pan` — lower `bit_score_threshold` (≈65–70) to
+recover it, or use `database="ALL"`. We deliberately **do not** change the default (it would
+risk the validated 99.2% pan parity and admit spurious domains); the now-parameterized
+`number(min_length=, bit_score_threshold=)` is the explicit, non-silent lever instead.
+(2) the live `ALL` engine reports ~5–7% *higher* bitscores than reference `hmmscan` — a
+pipeline-config difference that does **not** affect numbering (state vectors are identical,
+which is what the byte-parity gates check); the reported bitscore field is the only part that
+differs, and only for the live engine (the replay-based parity gate matches reference exactly).
+
 ### The other wins (not in the table)
 - **Zero runtime dependencies**: HMMER is statically linked and `ALL.hmm` is embedded in the
   extension. No `hmmscan` on PATH, no Biopython, no temp files. `pip install` and `import`.

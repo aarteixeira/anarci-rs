@@ -50,6 +50,34 @@ seqs, numbered, details, hits = anarci.run_anarci(
     "input.fasta", assign_germline=True, germline_method="evalue")
 ```
 
+## Partial chains & region annotation
+
+Partial variable domains (e.g. an FR3-CDR3-FR4-only fragment, common when only the
+diverse region is sequenced) are numbered out of the box — HMMER local alignment maps the
+covered residues to their correct IMGT positions. Two opt-in helpers make partials explicit:
+
+- **Region annotation** (`annotate_regions=True` on `anarci`/`run_anarci`): each domain's
+  detail dict gains `regions` (`{fr1,cdr1,fr2,cdr2,fr3,cdr3,fr4 → "absent"|"partial"|"complete"}`,
+  defined by IMGT boundaries, scheme-independent) and `covered_imgt` (`[min,max]` IMGT
+  position, or `None`). Off by default so the dict stays byte-identical to ANARCI.
+
+  ```python
+  _, details, _ = anarci.run_anarci(fr3_fragment, annotate_regions=True)
+  # details[0][0]["regions"]      -> {'fr1':'absent', ..., 'fr3':'complete', 'cdr3':'complete', 'fr4':'complete'}
+  # details[0][0]["covered_imgt"] -> (66, 128)
+  ```
+
+- **`number()` gates are parameterized**: `min_length` (default 70) and `bit_score_threshold`
+  (default 80) are now arguments, so you can number short or marginal-scoring fragments
+  (`anarci.number(frag, min_length=40)`). When `number()` returns `(False, False)` it now
+  emits a `UserWarning` explaining *why* (too short, or below threshold) — no silent
+  rejection. The returned tuple is unchanged, so drop-in behavior is preserved.
+
+  Note: the **pan** engine scores ~16–18% below reference ANARCI's per-species profiles
+  (different HMMs), so borderline partials may fall under the default threshold on `pan`;
+  lower `bit_score_threshold` (≈65–70) to recover them, or use `database="ALL"`. The default
+  stays 80 to preserve the validated pan parity and avoid spurious domains.
+
 ## Why it's faster
 
 Stock ANARCI spends ~98% of its time in the `hmmscan` subprocess and Biopython's text

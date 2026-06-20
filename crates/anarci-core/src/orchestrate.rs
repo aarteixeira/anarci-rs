@@ -7,6 +7,7 @@
 
 use crate::align::{parse_hmmer_query, HitRow, Hsp};
 use crate::germlines::{run_germline_assignment, run_germline_assignment_evalue, Germline};
+use crate::regions::{annotate_regions, RegionAnnotation};
 use crate::schemes::number_sequence_from_alignment;
 use crate::types::{assertion, CResult, Numbered, State, StateType};
 use rayon::prelude::*;
@@ -59,6 +60,11 @@ pub struct DomainInfo {
     pub scheme: String,
     pub query_name: String,
     pub germlines: Option<Germline>, // Some only if assign_germline
+    /// IMGT region-completeness annotation (F1a), computed from the domain's
+    /// state vector. Always present; the Python layer exposes it only when the
+    /// caller opts in via `annotate_regions=True`, keeping the default dict
+    /// byte-identical to reference ANARCI.
+    pub regions: RegionAnnotation,
 }
 
 /// Per-sequence result (mirrors one slot of ANARCI's three output lists).
@@ -286,6 +292,7 @@ fn process_one(
                 scheme: scheme.to_string(),
                 query_name: name.to_string(),
                 germlines: germ,
+                regions: annotate_regions(sv),
             });
         }
     }
@@ -415,8 +422,11 @@ pub fn run_anarci(
 }
 
 /// `number`: single sequence -> (numbering, chain class) or None.
-/// Returns `Ok(None)` for short sequences (<70) or sequences that don't number,
+/// Returns `Ok(None)` for sequences shorter than `min_length` or that don't number,
 /// and (matching ANARCI) catches the scheme/chain `AssertionError` as `Ok(None)`.
+/// `min_length` (default 70 at the API layer) and `bit_score_threshold` (default 80)
+/// are exposed so callers can number partial fragments (F1b); lowering them lets a
+/// short or marginal-scoring fragment through instead of being silently rejected.
 pub fn number(
     engine: &dyn HmmEngine,
     sequence: &[u8],
@@ -424,10 +434,12 @@ pub fn number(
     allow: &BTreeSet<String>,
     allowed_species: Option<&[String]>,
     species_from_germline: bool,
+    min_length: usize,
+    bit_score_threshold: f64,
 ) -> CResult<Option<(Numbered, String)>> {
     validate_sequence(sequence)?;
     let scheme = resolve_scheme(scheme)?;
-    if sequence.len() < 70 {
+    if sequence.len() < min_length {
         return Ok(None);
     }
     let seqs = vec![("sequence_0".to_string(), sequence.to_vec())];
@@ -435,8 +447,8 @@ pub fn number(
     // solely to derive species, which number() discards — so the cheaper identity
     // method is used regardless of engine, with no effect on the returned output.
     let res = match anarci(
-        engine, &seqs, scheme, allow, false, allowed_species, 80.0, species_from_germline,
-        GermlineMethod::Identity,
+        engine, &seqs, scheme, allow, false, allowed_species, bit_score_threshold,
+        species_from_germline, GermlineMethod::Identity,
     ) {
         Ok(r) => r,
         // ANARCI catches AssertionError here (e.g. TCR with antibody scheme) -> (False, False).
