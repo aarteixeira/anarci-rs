@@ -9,6 +9,7 @@ description = "Pure-Rust core of anarci-rs: state vectors, numbering schemes, ge
 serde = { workspace = true }
 serde_json = { workspace = true }
 once_cell = { workspace = true }
+rayon = { workspace = true }
 
 [dev-dependencies]
 flate2 = { workspace = true }
