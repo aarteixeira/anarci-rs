@@ -32,7 +32,7 @@ pub const GAP_EXTEND: i32 = 1;
 /// only contain the 20 standard residues (enforced by `validate_sequence`), so
 /// those rows are never reached in practice.
 #[rustfmt::skip]
-const BLOSUM62: [[i32; 26]; 26] = [
+pub(crate) const BLOSUM62: [[i32; 26]; 26] = [
     [4, -2, 0, -2, -1, -2, 0, -2, -1, -1, -1, -1, -1, -2, -4, -1, -1, -1, 1, 0, -4, 0, -3, -1, -2, -1], // A
     [-2, 4, -3, 4, 1, -3, -1, 0, -3, -3, 0, -4, -3, 4, -4, -2, 0, -1, 0, -1, -4, -3, -4, -1, -3, 0], // B
     [0, -3, 9, -3, -4, -2, -3, -3, -1, -1, -3, -1, -1, -3, -4, -3, -3, -3, -1, -1, -4, -1, -2, -1, -2, -3], // C

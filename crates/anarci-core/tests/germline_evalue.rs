@@ -8,7 +8,8 @@
 
 use anarci_core::sw;
 use anarci_core::{
-    run_germline_assignment, run_germline_assignment_evalue, State, StateType, StateVector,
+    run_germline_assignment, run_germline_assignment_evalue, run_germline_assignment_evalue_exact,
+    State, StateType, StateVector,
 };
 use flate2::read::GzDecoder;
 use serde::Deserialize;
@@ -159,6 +160,129 @@ fn evalue_v_gene_is_score_optimal() {
     }
     eprintln!("score-optimality checked on {checked} domains");
     assert!(checked > 500, "expected many domains, got {checked}");
+}
+
+/// Single-thread speed comparison: exact scalar full-scan (the old default) vs the
+/// fast k-mer+SIMD path, over the whole golden set, all-species. Reports ms/domain
+/// for both and the speedup. Run with `--nocapture` to see numbers; not a hard
+/// assertion on absolute time (machine-dependent), only that fast is faster.
+#[test]
+fn bench_evalue_germline_speed() {
+    use std::time::Instant;
+    let fx = load_fixture();
+    let all: Vec<String> = SPECIES.iter().map(|s| s.to_string()).collect();
+
+    // Collect (sv, seq, chain) for every domain once.
+    let mut work: Vec<(StateVector, Vec<u8>, String)> = Vec::new();
+    for seq in &fx.sequences {
+        let bytes = seq.seq.as_bytes().to_vec();
+        for dom in &seq.domains {
+            work.push((to_sv(&dom.state_vector), bytes.clone(), dom.chain_type.clone()));
+        }
+    }
+    let n = work.len() as f64;
+
+    // Warm the lazy indices / DBs once so timing excludes one-off build cost.
+    if let Some((sv, sq, ct)) = work.first() {
+        let _ = run_germline_assignment_evalue(sv, sq, ct, Some(&all));
+        let _ = run_germline_assignment_evalue_exact(sv, sq, ct, Some(&all));
+    }
+
+    let t0 = Instant::now();
+    let mut sink = 0usize;
+    for (sv, sq, ct) in &work {
+        let g = run_germline_assignment_evalue_exact(sv, sq, ct, Some(&all));
+        sink += g.v_gene.is_some() as usize;
+    }
+    let exact_ms = t0.elapsed().as_secs_f64() * 1000.0;
+
+    let t1 = Instant::now();
+    for (sv, sq, ct) in &work {
+        let g = run_germline_assignment_evalue(sv, sq, ct, Some(&all));
+        sink += g.v_gene.is_some() as usize;
+    }
+    let fast_ms = t1.elapsed().as_secs_f64() * 1000.0;
+
+    eprintln!(
+        "evalue germline speed ({} domains, all-species, single-thread):\n  \
+         exact scalar full-scan: {:.3} ms/domain ({:.0} dom/s)\n  \
+         fast kmer+SIMD:         {:.3} ms/domain ({:.0} dom/s)\n  \
+         speedup: {:.1}x   (sink={})",
+        work.len(),
+        exact_ms / n,
+        n / (exact_ms / 1000.0),
+        fast_ms / n,
+        n / (fast_ms / 1000.0),
+        exact_ms / fast_ms,
+        sink
+    );
+    assert!(fast_ms < exact_ms, "fast path should be faster than exact full scan");
+}
+
+/// HARD GATE: the fast e-value path (k-mer prefilter -> SIMD SW) must produce the
+/// IDENTICAL v_gene AND j_gene as the exact scalar full-scan brute force, for every
+/// domain in the golden set, under BOTH all-species and human-only scoping. This is
+/// the optimization's correctness contract: it is a faster way to compute the same
+/// answer, not a behaviour change. Zero mismatches required.
+#[test]
+fn fast_evalue_calls_identical_to_exact_full_scan() {
+    let fx = load_fixture();
+    let all: Vec<String> = SPECIES.iter().map(|s| s.to_string()).collect();
+    let human: Vec<String> = vec!["human".to_string()];
+
+    let mut domains = 0u64;
+    let mut v_mismatch = 0u64;
+    let mut j_mismatch = 0u64;
+    let mut first_mismatch: Option<String> = None;
+
+    for scope_name in ["all-species", "human-only"] {
+        let scope: &[String] = if scope_name == "all-species" { &all } else { &human };
+        for seq in &fx.sequences {
+            let bytes = seq.seq.as_bytes();
+            for dom in &seq.domains {
+                let sv = to_sv(&dom.state_vector);
+                let fast =
+                    run_germline_assignment_evalue(&sv, bytes, &dom.chain_type, Some(scope));
+                let exact = run_germline_assignment_evalue_exact(
+                    &sv,
+                    bytes,
+                    &dom.chain_type,
+                    Some(scope),
+                );
+                domains += 1;
+                if fast.v_gene != exact.v_gene {
+                    v_mismatch += 1;
+                    first_mismatch.get_or_insert_with(|| {
+                        format!(
+                            "[{scope_name}] {} ct={}: fast v={:?} exact v={:?}",
+                            seq.id, dom.chain_type, fast.v_gene, exact.v_gene
+                        )
+                    });
+                }
+                if fast.j_gene != exact.j_gene {
+                    j_mismatch += 1;
+                    first_mismatch.get_or_insert_with(|| {
+                        format!(
+                            "[{scope_name}] {} ct={}: fast j={:?} exact j={:?}",
+                            seq.id, dom.chain_type, fast.j_gene, exact.j_gene
+                        )
+                    });
+                }
+            }
+        }
+    }
+
+    eprintln!(
+        "identical-calls gate: {domains} (domain x scope) comparisons, \
+         v_mismatch={v_mismatch}, j_mismatch={j_mismatch}"
+    );
+    assert!(domains > 1000, "expected the full golden set x2 scopes, got {domains}");
+    assert_eq!(
+        v_mismatch + j_mismatch,
+        0,
+        "fast e-value path diverged from exact full scan. first: {}",
+        first_mismatch.unwrap_or_default()
+    );
 }
 
 // --- helpers that mirror the internals of the e-value path for the test ---
