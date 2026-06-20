@@ -5,7 +5,7 @@
 //! Rust with rayon. The GIL is released around compute.
 
 use anarci_core::orchestrate::{self, DomainInfo, SeqResult};
-use anarci_core::{Germline, HmmEngine, Hsp, Numbered};
+use anarci_core::{Germline, GermlineMethod, HmmEngine, Hsp, Numbered};
 use anarci_hmm::Engine;
 use once_cell::sync::OnceCell;
 use pyo3::prelude::*;
@@ -57,6 +57,20 @@ fn parse_database(database: &str) -> PyResult<bool> {
         other => Err(assertion_err(format!(
             "Unknown database '{other}'; use 'pan' (default, fast) or 'ALL' (exact ANARCI)."
         ))),
+    }
+}
+
+/// Resolve the germline-assignment method.
+///
+/// `None` defaults to identity germline assignment (ANARCI-compatible and fast — the
+/// pan engine derives a species label from it on every call, so the ~10x-slower e-value
+/// path must NOT be the default or it erases the pan speedup). Pass `germline_method="evalue"`
+/// for the higher-accuracy RIOT-style V/J-gene assignment (worth it when you need accurate
+/// germline genes, e.g. with `assign_germline=True`).
+fn parse_germline_method(method: Option<&str>, _pan: bool) -> PyResult<GermlineMethod> {
+    match method {
+        None => Ok(GermlineMethod::Identity),
+        Some(s) => GermlineMethod::parse(s).map_err(assertion_err),
     }
 }
 
@@ -186,6 +200,12 @@ fn germline_to_py<'py>(py: Python<'py>, g: &Germline) -> PyResult<Bound<'py, PyA
     let j = PyList::new(py, [gene_obj(&g.j_gene)?, opt_f64(py, g.j_identity)?])?;
     d.set_item("v_gene", v)?;
     d.set_item("j_gene", j)?;
+    // E-values only on the alignment-based path (None on identity), so the
+    // ANARCI-parity dict is byte-identical to before.
+    if g.v_evalue.is_some() || g.j_evalue.is_some() {
+        d.set_item("v_evalue", opt_f64(py, g.v_evalue)?)?;
+        d.set_item("j_evalue", opt_f64(py, g.j_evalue)?)?;
+    }
     Ok(d.into_any())
 }
 
@@ -281,6 +301,7 @@ fn run_core(
     bit_score_threshold: f64,
     ncpu: usize,
     pan: bool,
+    germline_method: GermlineMethod,
 ) -> PyResult<Vec<SeqResult>> {
     let eng = engine(pan)?;
     let res = py.allow_threads(|| {
@@ -294,6 +315,7 @@ fn run_core(
                 species,
                 bit_score_threshold,
                 pan,
+                germline_method,
             )
         };
         if ncpu >= 1 {
@@ -314,7 +336,7 @@ fn run_core(
 #[pyfunction]
 #[pyo3(signature = (sequences, scheme="imgt", database="pan", output=false, outfile=None,
     csv=false, allow=None, hmmerpath="", ncpu=None, assign_germline=false,
-    allowed_species=None, bit_score_threshold=80.0))]
+    allowed_species=None, bit_score_threshold=80.0, germline_method=None))]
 fn anarci<'py>(
     py: Python<'py>,
     sequences: &Bound<'py, PyAny>,
@@ -329,15 +351,17 @@ fn anarci<'py>(
     assign_germline: bool,
     allowed_species: Option<&Bound<'py, PyAny>>,
     bit_score_threshold: f64,
+    germline_method: Option<&str>,
 ) -> PyResult<Bound<'py, PyTuple>> {
     let _ = (output, outfile, csv, hmmerpath); // accepted for signature parity
     let pan = parse_database(database)?;
+    let gmethod = parse_germline_method(germline_method, pan)?;
     let seqs = parse_sequences(sequences)?;
     let allow = parse_allow(allow)?;
     let species = parse_species(allowed_species)?;
     let results = run_core(
         py, &seqs, scheme, &allow, assign_germline, species.as_deref(),
-        bit_score_threshold, ncpu.unwrap_or(1), pan,
+        bit_score_threshold, ncpu.unwrap_or(1), pan, gmethod,
     )?;
     let (n, d, h) = results_to_py(py, &results)?;
     PyTuple::new(py, [n.into_any(), d.into_any(), h.into_any()])
@@ -347,7 +371,7 @@ fn anarci<'py>(
 #[pyfunction]
 #[pyo3(signature = (seq, scheme="imgt", database="pan", output=false, outfile=None,
     csv=false, allow=None, hmmerpath="", ncpu=1, assign_germline=false,
-    allowed_species=None, bit_score_threshold=80.0))]
+    allowed_species=None, bit_score_threshold=80.0, germline_method=None))]
 fn run_anarci<'py>(
     py: Python<'py>,
     seq: &Bound<'py, PyAny>,
@@ -362,9 +386,11 @@ fn run_anarci<'py>(
     assign_germline: bool,
     allowed_species: Option<&Bound<'py, PyAny>>,
     bit_score_threshold: f64,
+    germline_method: Option<&str>,
 ) -> PyResult<Bound<'py, PyTuple>> {
     let _ = (output, outfile, csv, hmmerpath);
     let pan = parse_database(database)?;
+    let gmethod = parse_germline_method(germline_method, pan)?;
     // Input: list of (id,seq) | fasta path | single sequence string.
     let seqs: Vec<(String, Vec<u8>)> = if let Ok(s) = seq.extract::<String>() {
         if std::path::Path::new(&s).is_file() {
@@ -380,7 +406,7 @@ fn run_anarci<'py>(
     let species = parse_species(allowed_species)?;
     let results = run_core(
         py, &seqs, scheme, &allow, assign_germline, species.as_deref(),
-        bit_score_threshold, ncpu.max(1), pan,
+        bit_score_threshold, ncpu.max(1), pan, gmethod,
     )?;
     let (n, d, h) = results_to_py(py, &results)?;
     // Sequences out: [(id, seq_str), ...]

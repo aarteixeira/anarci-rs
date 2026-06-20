@@ -6,11 +6,37 @@
 //! dependency. Batch processing parallelises across sequences with rayon.
 
 use crate::align::{parse_hmmer_query, HitRow, Hsp};
-use crate::germlines::{run_germline_assignment, Germline};
+use crate::germlines::{run_germline_assignment, run_germline_assignment_evalue, Germline};
 use crate::schemes::number_sequence_from_alignment;
 use crate::types::{assertion, CResult, Numbered, State, StateType};
 use rayon::prelude::*;
 use std::collections::BTreeSet;
+
+/// How germline (V/J gene) assignment is performed.
+///
+/// * `Identity` — ANARCI's identity over the 128 IMGT match columns (byte-for-byte
+///   parity with reference ANARCI). The default for the exact/`ALL` engine.
+/// * `Evalue` — RIOT-style: separate Smith-Waterman alignment of the V and J
+///   regions against the ungapped germline genes, best gene chosen by e-value.
+///   More accurate (RIOT, Brief Bioinform 2025). The default for the pan engine.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GermlineMethod {
+    Identity,
+    Evalue,
+}
+
+impl GermlineMethod {
+    /// Parse `"identity"` / `"evalue"` (case-insensitive). Unknown -> error.
+    pub fn parse(s: &str) -> CResult<Self> {
+        match s.to_lowercase().as_str() {
+            "identity" => Ok(GermlineMethod::Identity),
+            "evalue" | "e-value" | "e_value" => Ok(GermlineMethod::Evalue),
+            other => Err(assertion!(
+                "Unknown germline_method '{other}'; use 'identity' or 'evalue'."
+            )),
+        }
+    }
+}
 
 /// An in-process HMM scan engine: scan one sequence, return its HSPs.
 /// Implementations must be thread-safe (`scan_one` is called from rayon workers).
@@ -206,6 +232,7 @@ fn process_one(
     allowed_species: Option<&[String]>,
     bit_score_threshold: f64,
     species_from_germline: bool,
+    germline_method: GermlineMethod,
 ) -> CResult<SeqResult> {
     let hsps = engine.scan_one(name, seq);
     let mut parsed = parse_hmmer_query(&hsps, seq.len(), bit_score_threshold, allowed_species);
@@ -227,7 +254,14 @@ fn process_one(
             // from germline assignment. Exact engine: keep ANARCI semantics.
             let want_germline = assign_germline || species_from_germline;
             let germ = if want_germline {
-                Some(run_germline_assignment(sv, seq, &det.chain_type, allowed_species))
+                Some(match germline_method {
+                    GermlineMethod::Identity => {
+                        run_germline_assignment(sv, seq, &det.chain_type, allowed_species)
+                    }
+                    GermlineMethod::Evalue => {
+                        run_germline_assignment_evalue(sv, seq, &det.chain_type, allowed_species)
+                    }
+                })
             } else {
                 None
             };
@@ -311,6 +345,7 @@ pub fn anarci(
     allowed_species: Option<&[String]>,
     bit_score_threshold: f64,
     species_from_germline: bool,
+    germline_method: GermlineMethod,
 ) -> CResult<Vec<SeqResult>> {
     let scheme = resolve_scheme(scheme)?;
     sequences
@@ -318,7 +353,7 @@ pub fn anarci(
         .map(|(name, seq)| {
             process_one(
                 engine, name, seq, scheme, allow, assign_germline, allowed_species,
-                bit_score_threshold, species_from_germline,
+                bit_score_threshold, species_from_germline, germline_method,
             )
         })
         .collect()
@@ -335,6 +370,7 @@ pub fn run_anarci(
     allowed_species: Option<&[String]>,
     bit_score_threshold: f64,
     species_from_germline: bool,
+    germline_method: GermlineMethod,
 ) -> CResult<Vec<SeqResult>> {
     let scheme = resolve_scheme(scheme)?;
 
@@ -357,7 +393,7 @@ pub fn run_anarci(
         .map(|(name, seq)| {
             process_one(
                 engine, name, seq, scheme, allow, assign_germline, allowed_species,
-                bit_score_threshold, species_from_germline,
+                bit_score_threshold, species_from_germline, germline_method,
             )
         })
         .collect::<CResult<Vec<_>>>()?;
@@ -395,7 +431,13 @@ pub fn number(
         return Ok(None);
     }
     let seqs = vec![("sequence_0".to_string(), sequence.to_vec())];
-    let res = match anarci(engine, &seqs, scheme, allow, false, allowed_species, 80.0, species_from_germline) {
+    // number() returns only (numbering, chain class); the germline call here exists
+    // solely to derive species, which number() discards — so the cheaper identity
+    // method is used regardless of engine, with no effect on the returned output.
+    let res = match anarci(
+        engine, &seqs, scheme, allow, false, allowed_species, 80.0, species_from_germline,
+        GermlineMethod::Identity,
+    ) {
         Ok(r) => r,
         // ANARCI catches AssertionError here (e.g. TCR with antibody scheme) -> (False, False).
         Err(_) => return Ok(None),

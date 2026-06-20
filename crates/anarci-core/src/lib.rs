@@ -9,13 +9,16 @@ pub mod constants;
 pub mod germlines;
 pub mod orchestrate;
 pub mod schemes;
+pub mod sw;
 pub mod types;
 
 pub use align::{hmm_alignment_to_states, parse_hmmer_query, DomainDetails, Hsp, ParsedQuery};
-pub use germlines::{get_hmm_length, get_identity, run_germline_assignment, Germline};
+pub use germlines::{
+    get_hmm_length, get_identity, run_germline_assignment, run_germline_assignment_evalue, Germline,
+};
 pub use orchestrate::{
     anarci, chain_type_to_class, default_allow, number, resolve_scheme, run_anarci, validate_sequence,
-    DomainInfo, HmmEngine, SeqResult,
+    DomainInfo, GermlineMethod, HmmEngine, SeqResult,
 };
 pub use schemes::number_sequence_from_alignment;
 pub use types::{CResult, CoreError, Numbered, Res, State, StateType, StateVector};

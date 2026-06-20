@@ -30,6 +30,22 @@ profile (a real ANARCI failure mode: 7-species ANARCI mis-numbers ~5% by letting
 `rhesus_K` win on a humanized kappa). The remaining ~0.8% are IMGT-legal gap-placement ties.
 Use `database="ALL"` whenever you need output byte-identical to stock ANARCI.
 
+## Germline assignment
+
+`assign_germline=True` reports the closest V/J germline genes. Two methods:
+
+- `germline_method="identity"` (default) — ANARCI's sequence-identity match. Fast.
+- `germline_method="evalue"` — RIOT-style Smith-Waterman + Karlin-Altschul e-value
+  alignment to the ungapped germline genes. **More accurate** (human V-gene agreement with
+  the RIOT tool rises 66.8%→75.4%, J-gene 75.9%→88.5%; on disagreements the e-value call is
+  right ~7:1), at ~10× the germline cost — worth it when you need accurate genes. It does not
+  change residue numbering, only the reported `v_gene`/`j_gene` (+ `v_evalue`/`j_evalue`).
+
+```python
+seqs, numbered, details, hits = anarci.run_anarci(
+    "input.fasta", assign_germline=True, germline_method="evalue")
+```
+
 ## Why it's faster
 
 Stock ANARCI spends ~98% of its time in the `hmmscan` subprocess and Biopython's text

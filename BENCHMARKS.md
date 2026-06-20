@@ -95,6 +95,25 @@ clearly-non-matching profiles, or scanning fewer profiles per query. Those chang
 are reported and would break byte-for-byte parity, so they are out of scope for a drop-in
 replacement (a future opt-in `--fast` mode could trade exactness for speed).
 
+## Germline assignment accuracy (`germline_method="evalue"`)
+
+Optional RIOT-style e-value germline assignment is *more accurate* than ANARCI's identity
+matching (the one numbering-adjacent axis where "better than ANARCI" is well-defined).
+Truth set = the `riot_na` tool (itself an e-value SW assigner — a cross-tool agreement check,
+not an independent gold standard), human-only V/J genes (where IMGT and OGRDB names overlap):
+
+| method | V-gene agreement | J-gene agreement |
+|---|---|---|
+| identity (ANARCI) | 66.8% | 75.9% |
+| **evalue** | **75.4%** | **88.5%** |
+
+On V-gene disagreements, the e-value call matches `riot_na` where identity doesn't by ~7:1
+(35 vs 5). It changes only `v_gene`/`j_gene` (+ `v_evalue`/`j_evalue`), never the numbering.
+Honest limits: the RIOT-paper "97%" is not reproduced — the residual gap is the germline DB
+(we use ANARCI's IMGT, riot_na uses OGRDB, whose mouse IDs can't name-match IMGT), and there
+is no public curated residue/germline gold standard. Cost: ~10× the identity path per domain,
+so it is **opt-in** (the pan engine's default species label uses the fast identity path).
+
 ### The other wins (not in the table)
 - **Zero runtime dependencies**: HMMER is statically linked and `ALL.hmm` is embedded in the
   extension. No `hmmscan` on PATH, no Biopython, no temp files. `pip install` and `import`.
