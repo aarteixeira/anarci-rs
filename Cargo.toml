@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/anarci-core"]
+members = ["crates/anarci-core", "crates/hmmer-sys", "crates/anarci-hmm", "crates/anarci-py"]
 
 [workspace.package]
 version = "0.1.0"

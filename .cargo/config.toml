@@ -1,0 +1,5 @@
+# PyO3 extension-module cdylibs resolve Python symbols at runtime; macOS needs
+# dynamic_lookup so a plain `cargo build` of the cdylib links. (maturin sets this
+# itself, but this keeps `cargo build`/`cargo test` working across the workspace.)
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-undefined", "-C", "link-arg=dynamic_lookup"]

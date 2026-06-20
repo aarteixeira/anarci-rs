@@ -1,0 +1,17 @@
+[package]
+name = "anarci-py"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "PyO3 module `anarci_rs`: drop-in Python API for ANARCI, all-Rust internals."
+
+[lib]
+name = "anarci_rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+anarci-core = { path = "../anarci-core" }
+anarci-hmm = { path = "../anarci-hmm" }
+once_cell = { workspace = true }
+rayon = { workspace = true }
+pyo3 = { version = "0.23", features = ["extension-module"] }

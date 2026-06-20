@@ -1,0 +1,22 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "anarci-rs"
+version = "0.1.0"
+description = "Rust reimplementation of ANARCI (antibody/TCR numbering); drop-in for `import anarci`."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "BSD-3-Clause" }
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[tool.maturin]
+manifest-path = "crates/anarci-py/Cargo.toml"
+module-name = "anarci_rs"
+# HMMER is statically linked and ALL.hmm is embedded in the extension -> zero runtime deps.
+features = ["pyo3/extension-module"]

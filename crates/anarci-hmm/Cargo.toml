@@ -1,0 +1,19 @@
+[package]
+name = "anarci-hmm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Safe in-process HMMER 3.4 scan engine producing ANARCI-compatible HSPs."
+
+[dependencies]
+hmmer-sys = { path = "../hmmer-sys" }
+anarci-core = { path = "../anarci-core" }
+anyhow = "1"
+
+[dev-dependencies]
+flate2.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rayon.workspace = true
