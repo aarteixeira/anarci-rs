@@ -1,8 +1,8 @@
 # Release evidence
 
-Version 0.1.0 is a verified release candidate. All 22 CI checks passed for runtime
-commit `fc266797eb4536c5c5bca238ccc20d238dfa109e`, including the 20-wheel platform
-matrix. No package-index upload has occurred.
+Version 0.1.0 is a release candidate. This file records completed source review
+and qualification checks; the delivered manifest binds the final release commit
+and artifact hashes to its CI run. No package-index upload has occurred.
 
 ## Implemented surface
 
@@ -24,8 +24,8 @@ The plan passed two review rounds. Implementation review found and resolved:
 - Explicit mmCIF/stdin routing, pairing output paths and scheme-independent CDR
   coordinate masks.
 - TSV quoting and the meaning of region completeness flags.
-- Legacy argument order, input containers, output generation, species-filter
-  edge cases and deprecated helper insertion rules.
+- Legacy argument order, input containers, wildcard export names, output
+  generation, species-filter edge cases and deprecated helper insertion rules.
 - Missing source-build resources, license materials and installed CLI delivery.
 - macOS compiler/libclang header alignment and Python 3.9-compatible source
   extraction, with tests for traversal, links, permissions and existing files.

@@ -26,6 +26,11 @@ class CompatibilityTests(unittest.TestCase):
         self.assertEqual(inspect.signature(anarci_rs.anarci).parameters["database"].default, "pan")
 
     def test_imports_constants_and_germlines(self):
+        scope = {"number": "caller binding"}
+        exec("from anarci import *", scope)
+        self.assertEqual(scope["number"], "caller binding")
+        self.assertEqual(set(scope) - {"number", "__builtins__"}, {"anarci", "schemes"})
+        self.assertTrue(callable(anarci.number))
         module = importlib.import_module("anarci.anarci")
         for name in ("run_hmmer", "parse_hmmer_output", "number_sequence_from_alignment",
                      "number_sequences_from_alignment", "get_identity", "run_germline_assignment",

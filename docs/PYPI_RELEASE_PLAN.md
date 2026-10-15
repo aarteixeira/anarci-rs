@@ -149,3 +149,11 @@ All 22 checks passed for runtime/build commit
 model. One checkout stalled and was rerun after confirmed cancellation; completed
 checks were retained. Final artifact inspection and the release manifest bind the
 qualified files to their hashes. Publication remains a separately authorized step.
+
+A final reference probe found a package-metadata compatibility difference:
+`from anarci import *` exported additional names and could replace a caller's
+existing `number` binding. The compatibility package now uses the reference
+`__all__ = ["anarci", "schemes"]`; a regression check verifies the caller binding
+and explicit access to `anarci.number`. This change leaves Rust computation and
+extended API exports intact. The final manifest records the qualification of
+this completed interface, rather than inferring it from an earlier CI result.
