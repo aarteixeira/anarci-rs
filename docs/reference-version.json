@@ -1,0 +1,79 @@
+{
+  "distribution": "anarci",
+  "version": "1.3",
+  "python_version": "3.10.20 | packaged by conda-forge | (main, Jun 11 2026, 03:28:47) [Clang 19.1.7 ]",
+  "source_location": "isolated reference environment: site-packages/anarci",
+  "source_sha256": {
+    "__init__.py": "9db29e86ce18bf5d7eb193b724f9177db14690927756bd57b40c24a4c94907ef",
+    "anarci.py": "f42311674d73ae45a4553aa13dbe618a3efad527ef9d8bd6135d57dff1eb4b45",
+    "schemes.py": "856f4c942c226cbeabfabb69f8bfd4004f00f9b0aa6ce1e296636d2ce88f4b4b",
+    "germlines.py": "025ce60e46791f2d1c2545bb243203a5368759d204c4ea6a9d854d1bf6b69933"
+  },
+  "hmm_database_sha256": "cdb77c6772d7738d556b8e9c5070815f110abab093fe05c01663f9d8d9e20ffe",
+  "hmmscan_sha256": "cf8d989399b6046845cbb76f1285dc1c6f7fffdcb85f74bae1b3b0a2a5198404",
+  "hmmscan_version": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "scheme_aliases": {
+    "m": "martin",
+    "c": "chothia",
+    "k": "kabat",
+    "imgt": "imgt",
+    "kabat": "kabat",
+    "chothia": "chothia",
+    "martin": "martin",
+    "i": "imgt",
+    "a": "aho",
+    "aho": "aho",
+    "wolfguy": "wolfguy",
+    "w": "wolfguy"
+  },
+  "fixture_provenance": "Only public mouse anti-lysozyme 12e8:H and 12e8:L example entries in upstream anarci.py; synthetic variants generated locally.",
+  "fixture_sha256": "faa7662403e92a2c8c2cc4f75b6d5bdafed8b6bfd0f5b64f5d6e6099f8074e47",
+  "expected_sha256": "38817843554bd244554cc34601e2760ceeb1146375b0009ff6992b2a1742fe5b",
+  "capture_settings": {
+    "assign_germline": true,
+    "ncpu": 1,
+    "allowed_species": [
+      "human",
+      "mouse"
+    ],
+    "bit_score_threshold": 80,
+    "database": "ALL"
+  },
+  "numeric_comparison": "Numbering and identifiers exact. HMMER text rounds bitscore/bias to 0.1 and E-values to two significant digits; allow 0.051 absolute score/bias and 2% relative E-value differences. Identity uses 1e-12 absolute tolerance.",
+  "synthetic_consensus_sha256": "979254502cdeee16d42e771492adcf65562d390ca0f253528887d2f1c322126f",
+  "synthetic_consensus_provenance": "Deterministic hmmemit -c consensuses from human_H/K/L/A/B/G/D in the pinned ALL.hmm. Model-derived synthetic inputs, not observed sequences.",
+  "hmmemit_sha256": "b4978896e5a2482bec3f0db22578d53435a970162e5d01aa224250ea414a1c14",
+  "synthetic_consensus_settings": {
+    "program": "hmmemit",
+    "arguments": [
+      "-c"
+    ],
+    "models": [
+      "human_H",
+      "human_K",
+      "human_L",
+      "human_A",
+      "human_B",
+      "human_G",
+      "human_D"
+    ],
+    "normalization": "uppercase amino acid consensus; no random sampling"
+  },
+  "hmmer_text_fixture": {
+    "file": "tests/python/safe_hmmer.txt",
+    "sha256": "9e9a0692a8e395004dcb7a2ec675b703725d1e09398a2c0d3e521ac0ba1af83d",
+    "input": "12e8:H only; query id 0",
+    "command": [
+      "hmmscan",
+      "--cpu",
+      "1",
+      "-o",
+      "safe_hmmer.txt",
+      "ALL.hmm",
+      "safe12e8.fasta"
+    ],
+    "path_normalization": "Replace local absolute paths with ALL.hmm and SAFE_FIXTURE; HMMER output and alignments unchanged."
+  },
+  "alignment_fixture_sha256": "3a67f97ade8a2a8268e279a6cb64f0e511d84f6787ef7bab4e0ad3dceadff55e",
+  "helper_fixture_sha256": "1a6a5d7bec9b8662bd99b84fa03815d1207699e847f9bc4fa1f9c646057a0aaf"
+}

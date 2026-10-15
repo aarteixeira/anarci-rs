@@ -11,6 +11,7 @@ description = "Safe in-process HMMER 3.4 scan engine producing ANARCI-compatible
 hmmer-sys = { path = "../hmmer-sys" }
 anarci-core = { path = "../anarci-core" }
 anyhow = "1"
+tempfile = "3"
 
 [dev-dependencies]
 flate2.workspace = true

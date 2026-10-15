@@ -1,182 +1,169 @@
 # anarci-rs
 
-A Rust reimplementation of [ANARCI](https://github.com/oxpig/ANARCI) (antibody & TCR
-variable-domain numbering) with a Python wrapper. **Drop-in replacement**: change
+Antibody and T-cell receptor variable-domain numbering with an in-process Rust
+backend and Python interfaces. HMMER and the profile databases are bundled. Batch
+scans run in Rust, release Python's global interpreter lock and deduplicate
+identical sequences. Set `ncpu` to select multiple workers.
 
-```python
-import anarci
-```
-to
-```python
-import anarci_rs as anarci
-```
-and the function names, signatures, and return values are identical.
+The distribution provides two interfaces:
 
-All internals are in Rust. The batch path runs fully in Rust with rayon parallelism and
-no Python in the hot loop. The HMM search runs in-process via a native HMMER 3.4 binding —
-no `hmmscan` subprocess, no temp files, no text parsing.
+- `anarci_rs` keeps the fast pan engine and the extended configuration options.
+- `anarci` supplies compatibility entry points with reference ANARCI defaults.
 
-## Two engines
+## Install
 
-| Engine | Select | Speed | Numbering |
-|---|---|---|---|
-| **pan** (default) | `database="pan"` | **~4× faster** (≈5.6× vs reference ANARCI; more on multicore + dedup) | 99.2% identical to ANARCI; ties on conserved IMGT anchors; *more robust* |
-| **exact** | `database="ALL"` | baseline | **byte-for-byte identical** to stock ANARCI |
-
-The **pan** engine uses one pan-species HMM per chain type (7 profiles vs ANARCI's 29);
-species and germline genes are assigned by sequence identity. It reproduces ANARCI's IMGT
-numbering on 99.2% of sequences and is actually *more robust* — it can't pick a wrong-species
-profile (a real ANARCI failure mode: 7-species ANARCI mis-numbers ~5% by letting e.g.
-`rhesus_K` win on a humanized kappa). The remaining ~0.8% are IMGT-legal gap-placement ties.
-Use `database="ALL"` whenever you need output byte-identical to stock ANARCI.
-
-## Germline assignment
-
-`assign_germline=True` reports the closest V/J germline genes. Two methods:
-
-- `germline_method="identity"` — ANARCI's sequence-identity match. The default for the
-  exact `database="ALL"` engine (byte-for-byte ANARCI parity).
-- `germline_method="evalue"` — RIOT-style Smith-Waterman + Karlin-Altschul e-value
-  alignment to the ungapped germline genes. **More accurate** (human V-gene agreement with
-  the RIOT tool rises 66.8%→75.4%, J-gene 75.9%→88.5%; on disagreements the e-value call is
-  right ~7:1). The **default for the pan engine** (`database="pan"`): a k-mer prefilter plus a
-  bit-exact SIMD Smith-Waterman kernel make it fast enough to default (end-to-end pan
-  throughput drops only ~427→312 seq/s single-thread vs identity germline, still well above
-  the identity-pan target). It does not change residue numbering, only the reported
-  `v_gene`/`j_gene` (+ `v_evalue`/`j_evalue`). Pass an explicit `germline_method=` to override.
-
-```python
-seqs, numbered, details, hits = anarci.run_anarci(
-    "input.fasta", assign_germline=True, germline_method="evalue")
-```
-
-## Partial chains & region annotation
-
-Partial variable domains (e.g. an FR3-CDR3-FR4-only fragment, common when only the
-diverse region is sequenced) are numbered out of the box — HMMER local alignment maps the
-covered residues to their correct IMGT positions. Two opt-in helpers make partials explicit:
-
-- **Region annotation** (`annotate_regions=True` on `anarci`/`run_anarci`): each domain's
-  detail dict gains `regions` (`{fr1,cdr1,fr2,cdr2,fr3,cdr3,fr4 → "absent"|"partial"|"complete"}`,
-  defined by IMGT boundaries, scheme-independent) and `covered_imgt` (`[min,max]` IMGT
-  position, or `None`). Off by default so the dict stays byte-identical to ANARCI.
-
-  ```python
-  _, details, _ = anarci.run_anarci(fr3_fragment, annotate_regions=True)
-  # details[0][0]["regions"]      -> {'fr1':'absent', ..., 'fr3':'complete', 'cdr3':'complete', 'fr4':'complete'}
-  # details[0][0]["covered_imgt"] -> (66, 128)
-  ```
-
-- **`number()` gates are parameterized**: `min_length` (default 70) and `bit_score_threshold`
-  (default 80) are now arguments, so you can number short or marginal-scoring fragments
-  (`anarci.number(frag, min_length=40)`). When `number()` returns `(False, False)` it now
-  emits a `UserWarning` explaining *why* (too short, or below threshold) — no silent
-  rejection. The returned tuple is unchanged, so drop-in behavior is preserved.
-
-  Note: the **pan** engine scores ~16–18% below reference ANARCI's per-species profiles
-  (different HMMs), so borderline partials may fall under the default threshold on `pan`;
-  lower `bit_score_threshold` (≈65–70) to recover them, or use `database="ALL"`. The default
-  stays 80 to preserve the validated pan parity and avoid spurious domains.
-
-## Why it's faster
-
-Stock ANARCI spends ~98% of its time in the `hmmscan` subprocess and Biopython's text
-parsing of its output (profiled: 67% subprocess, 31% parse, <2% in the numbering itself).
-anarci-rs eliminates both by running HMMER in-process and doing the parse, numbering,
-germline assignment, and batching in Rust. The **pan** engine adds a further ~4× by scanning
-7 profiles instead of 29 (the HMM search is the real bottleneck), and the batch path
-deduplicates identical sequences (a free win on repetitive data).
-
-## Correctness
-
-The **exact** engine (`database="ALL"`) is validated **byte-for-byte** against reference
-ANARCI (conda `anarci 2024.05.21`, HMMER 3.4) on 996 sequences (1013 domains):
-
-| Layer | Gate | Result |
-|---|---|---|
-| Numbering (imgt, chothia, kabat, martin, aho, wolfguy) | identical numbering from identical state vectors | 1013/1013 domains |
-| Germline assignment | identical v/j gene + identity | all domains |
-| HMMER-output → state vectors (`parse_hmmer_query`) | identical state vectors from identical HSPs | 996/996 |
-| End-to-end `anarci()` (imgt) | identical numbered + details + germlines + hit_tables | 996/996 |
-| Native HMM engine | identical state vectors vs stock hmmscan | 996/996 |
-
-The **pan** engine (default) is validated by `scripts/validate_pan.py`: numbering identical
-to reference ANARCI run against the same pan HMMs (996/996), 99.20% identical to stock ANARCI,
-and tied on conserved-anchor correctness (99.21%).
-
-The pinned reference HMM database and germlines are checked into `reference_data/`
-(`ALL.hmm`, `FEW.hmm`, `germlines.py`) so results are reproducible.
-
-**No silent failures or fallbacks.** Every error path raises explicitly; ANARCI's own
-errors (e.g. `AssertionError` when numbering a TCR with an antibody-only scheme) are
-reproduced exactly rather than worked around.
-
-## Public API
-
-Identical to ANARCI:
-
-```python
-import anarci_rs as anarci
-
-# single sequence
-numbering, chain_type = anarci.number("EVQLQ...SS", scheme="imgt")
-
-# one or many; numbered / alignment_details / hit_tables out
-numbered, details, hits = anarci.anarci([("id1", "EVQ..."), ("id2", "DIV...")],
-                                        scheme="imgt", assign_germline=True)
-
-# batch with native Rust parallelism (ncpu controls rayon threads)
-seqs, numbered, details, hits = anarci.run_anarci("input.fasta", scheme="chothia", ncpu=8)
-
-# byte-for-byte identical to stock ANARCI (slower exact engine)
-numbering, chain_type = anarci.number("EVQLQ...SS", scheme="imgt", database="ALL")
-```
-
-All functions take `database="pan"` (default, fast) or `database="ALL"` (exact ANARCI).
-Schemes: `imgt`, `chothia`, `kabat`, `martin`, `aho`, `wolfguy`. Chains: heavy, kappa,
-lambda, TCR α/β/γ/δ. Species: human, mouse, rat, rabbit, rhesus, pig, alpaca, cow.
-
-## Build
+Install a wheel built for your Python version and platform:
 
 ```bash
-# Rust core tests (numbering, germline, parse, end-to-end)
-cargo test -p anarci-core
-
-# Build the Python extension (bundles HMMER + data; zero system deps)
-maturin develop --release        # into the active venv
-# or
-maturin build --release          # produce a wheel
+python -m pip install path/to/anarci_rs-0.1.0-<python>-<abi>-<platform>.whl
 ```
 
-## Layout
+The distribution name is `anarci-rs`. Once a release is published on PyPI, install
+it with `python -m pip install anarci-rs`. Supported build targets and source-build
+requirements are in [BUILDING.md](docs/BUILDING.md). A wheel includes the native
+engine; it does not need an external `hmmscan` executable.
 
+Use a separate environment from the original ANARCI distribution. Both packages
+provide the `anarci` import path, so installing them together can overwrite files.
+
+## Number sequences from Python
+
+```python
+import anarci_rs
+
+# records is a list of (identifier, amino_acid_sequence) pairs.
+numbered, details, hits = anarci_rs.anarci(records, database="pan")
+
+# File input, parallel batch, V/J calls and region coverage.
+sequences, numbered, details, hits = anarci_rs.run_anarci(
+    "antibodies.fasta",
+    ncpu=4,
+    assign_germline=True,
+    germline_method="evalue",
+    annotate_regions=True,
+)
+
+# Single sequence; lower these gates explicitly for partial domains.
+positions, chain_class = anarci_rs.number(
+    sequence, min_length=40, bit_score_threshold=65,
+)
 ```
-crates/anarci-core   pure Rust: numbering schemes, germline, parse, orchestration
-crates/hmmer-sys     FFI to HMMER 3.4 + Easel (fetched at build time, static-linked)
-crates/anarci-hmm    safe in-process HMM scan engine -> HSPs
-crates/anarci-py     PyO3 module `anarci_rs` (the drop-in API)
-reference_data/      pinned ALL.hmm + germlines (the canonical reference data)
-examples/            example FASTAs (from ANARCI, BSD-3) for the scripts/benchmark
-tests/fixtures/      golden fixtures captured from reference ANARCI
-scripts/             fixture generators + the accuracy/speed benchmark
+
+`anarci` returns three lists in input order. A numbered sequence contains a list of
+domains, each `(positions, start, end)`. Each position is
+`((position_number, insertion_code), amino_acid)`. Sequences with no recognized
+domain have `None` entries. `run_anarci` also returns the input records.
+`number` returns the first domain's positions and chain class, or `(False, False)`.
+Its light-chain class is `L` for both kappa and lambda.
+
+### Engines and configuration
+
+| Option | Values and behavior |
+|---|---|
+| `database` | `"pan"` uses seven pan-species profiles; `"ALL"` uses the reference 29-profile set. Custom HMM files use the native loader. |
+| `scheme` | `imgt`, `chothia`, `kabat`, `martin`, `aho`, `wolfguy`, plus ANARCI's short aliases. Some schemes apply only to antibody chains. |
+| `allow` | A subset of `H`, `K`, `L`, `A`, `B`, `G`, `D`. |
+| `allowed_species` | Species filter. Extended batch calls default to all supported species; the compatibility interface defaults to human/mouse. |
+| `assign_germline` | Add V/J gene assignments to domain details. |
+| `germline_method` | `identity` or `evalue`. The pan default is `evalue`; the exact default is `identity`. |
+| `bit_score_threshold` | HMM domain acceptance cutoff; default 80. Profile sets have different score distributions. |
+| `ncpu` | Number of Rust workers for batch calls. See the API reference for accepted edge values. |
+| `annotate_regions` | Add IMGT region completeness and covered IMGT positions to domain details. |
+| `min_length` | Single-sequence `number` length gate; default 70. |
+
+Pan and exact profiles can place gaps differently and report different scores,
+species and germlines. Choose `database="ALL"` and matching options when comparing
+with the pinned reference ANARCI. The pan engine remains available explicitly even
+when using the compatibility interface.
+
+## Use existing ANARCI code
+
+```python
+from anarci import anarci, run_anarci, number
+
+numbered, details, hits = anarci(records, assign_germline=True)
+sequences, numbered, details, hits = run_anarci(records, 4)
+positions, chain_class = number(sequence, scheme="imgt")
 ```
 
-### Build-time HMMER fetch
-`hmmer-sys/build.rs` downloads `hmmer-3.4.tar.gz` (SHA-256-pinned, verified) and
-compiles it once into `OUT_DIR`. The first build (and any build after `cargo clean`)
-needs network + a C toolchain (`curl`, `tar`, `make`, a C compiler). For offline/CI
-builds, point `HMMER_TARBALL` at a local copy of the official tarball:
-`HMMER_TARBALL=/path/to/hmmer-3.4.tar.gz maturin build --release`.
+The compatibility functions use `database="ALL"` and human/mouse defaults. Their
+computation still runs in Rust. The supported helper imports, output writers,
+input behavior and intentional differences are listed in
+[COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
-## Benchmark
+## Additional Python tools
+
+The Python package also exposes native sequence-file reading, six-frame DNA
+translation and annotation, PDB/mmCIF chain extraction, structure pairing and
+output formatting. These call the same Rust library as the command line.
+See [API.md](docs/API.md) for signatures, return fields and configuration.
+
+Structural pairing and contact reports are geometry-based inferences. Contact
+counts describe the supplied coordinates; they do not establish an epitope or
+binding specificity independently of experimental evidence.
+
+`anarci_rs.experimental` exposes the learned-engine label codec, constrained
+decoder, augmentation and dataset utilities. The optional Candle model/training
+code remains available in the Rust crate. The package supplies no validated
+trained numbering checkpoint. See [EXPERIMENTAL.md](docs/EXPERIMENTAL.md).
+
+## Command line
 
 ```bash
-python scripts/benchmark.py --accuracy   # byte-for-byte vs reference ANARCI, all schemes
-python scripts/benchmark.py --speed      # throughput vs reference, ncpu sweep
+anarci-rs antibodies.fasta --engine pan --format tsv
+anarci-rs reads.fastq --input-type dna --report-frames --format json
+anarci-rs structure.pdb --pair --format json --output pairs.json
+anarci-rs antibodies.fasta --engine all --scheme kabat --assign-germline
 ```
 
-See `BENCHMARKS.md` for results. `PLAN.md` documents the full implementation plan.
+Run `anarci-rs --help` for the full option list. The Rust workspace also retains
+the `anarci` binary (`cargo run --release -p anarci-cli -- ...`).
 
-## License
+## Correctness and performance
 
-BSD-3-Clause (matching ANARCI, HMMER, and Easel, which are bundled).
+Release checks compare the compatibility interface with a pinned reference
+ANARCI installation and exercise the added APIs, failure paths and installed
+artifacts. The release suite uses a small, identified reference set and synthetic
+cases. Passing that suite establishes the tested contracts; it does not prove
+identical behavior for every possible sequence or custom HMM.
+
+Run the Python tests against an installed build:
+
+```bash
+python -m unittest discover -s tests/python -v
+python scripts/validate_release.py --help
+python scripts/benchmark_release.py --help
+```
+
+Performance depends on the profile set, batch size, worker count and duplicate
+rate. Benchmark exact and pan modes separately and compare equal work. Current
+release measurements and validation limits are in
+[RELEASE_EVIDENCE.md](docs/RELEASE_EVIDENCE.md); historical measurements in
+`BENCHMARKS.md` are tied to their original code and datasets.
+
+## Development
+
+```bash
+maturin develop --release
+maturin build --release
+maturin sdist
+```
+
+See [BUILDING.md](docs/BUILDING.md) and [RELEASING.md](docs/RELEASING.md) for the
+native toolchain, wheel targets, clean source builds and release checks.
+
+| Path | Purpose |
+|---|---|
+| `crates/anarci-core` | Schemes, state vectors, orchestration, germlines and regions |
+| `crates/anarci-hmm` | In-process HMMER engine |
+| `crates/hmmer-sys` | Verified HMMER/Easel source build and native bindings |
+| `crates/anarci-py` | Python native extension |
+| `crates/anarci-cli` | Shared annotation/structure library and Rust command |
+| `crates/anarci-learned` | Experimental codec, decoder, data tools and optional model |
+| `python/` | Extended Python API and ANARCI compatibility package |
+
+## Licenses and attribution
+
+Project code is BSD-3-Clause. Bundled components and reference data have their
+own notices and attribution requirements; see [NOTICE.md](NOTICE.md) and the
+packaged license files. Review those terms before redistributing the artifacts.

@@ -152,10 +152,10 @@ pub(crate) fn region_map(region_string: &str, dict: &[(char, usize)]) -> Vec<usi
         .collect()
 }
 
-type Regions = (Vec<Vec<Res>>, Option<usize>, Option<usize>);
+pub type Regions = (Vec<Vec<Res>>, Option<usize>, Option<usize>);
 
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn number_regions(
+pub fn number_regions(
     sequence: &[u8],
     state_vector: &[State],
     state_string: &[u8],     // 'X' / 'I' per state, length 128
@@ -252,7 +252,7 @@ fn signed_index(i: isize, len: usize) -> usize {
 
 /// `get_imgt_cdr`: symmetric CDR numbering (used by IMGT). Returns `len`-long
 /// list of `Some((pos, ins))` or `None` (a gap the caller fills).
-pub(crate) fn get_imgt_cdr(
+pub fn get_imgt_cdr(
     length: usize,
     maxlength: usize,
     start: i32,
@@ -339,7 +339,7 @@ pub(crate) fn gap_missing(numbering: &[Vec<Res>]) -> Vec<Res> {
 
 /// `get_cdr3_annotations` for chothia/kabat (the branches actually used by the
 /// schemes). Returns a sorted list of `(pos, ins)`. IMGT uses `get_imgt_cdr`.
-pub(crate) fn get_cdr3_annotations(
+pub fn get_cdr3_annotations(
     length: usize,
     scheme: &str,
     chain_type: &str,
@@ -384,7 +384,7 @@ pub(crate) fn get_cdr3_annotations(
 }
 
 /// `_get_wolfguy_L1`: canonical-class CDRL1 numbering. Returns position list.
-pub(crate) fn get_wolfguy_l1(seq: &[Res], length: usize) -> CResult<Vec<i32>> {
+pub fn get_wolfguy_l1(seq: &[Res], length: usize) -> CResult<Vec<i32>> {
     // (name, consensus, positions) for each characterised length.
     let table: &[(usize, &[(&str, &[i32])])] = ig::WOLFGUY_L1;
     if let Some((_, canonicals)) = table.iter().find(|(l, _)| *l == length) {

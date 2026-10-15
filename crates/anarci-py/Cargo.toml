@@ -6,12 +6,20 @@ license.workspace = true
 description = "PyO3 module `anarci_rs`: drop-in Python API for ANARCI, all-Rust internals."
 
 [lib]
-name = "anarci_rs"
+name = "_native"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anarci-core = { path = "../anarci-core" }
 anarci-hmm = { path = "../anarci-hmm" }
+anarci-cli = { path = "../anarci-cli" }
+anarci-learned = { path = "../anarci-learned" }
+serde_json = { workspace = true }
 once_cell = { workspace = true }
 rayon = { workspace = true }
 pyo3 = { version = "0.23", features = ["extension-module"] }
+candle-core = { version = "0.11", optional = true }
+candle-nn = { version = "0.11", optional = true }
+
+[features]
+learned-model = ["anarci-learned/model", "dep:candle-core", "dep:candle-nn"]

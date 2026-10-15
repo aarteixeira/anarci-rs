@@ -1,0 +1,23 @@
+[package]
+name = "anarci-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+readme = "README.md"
+
+# Real-world annotation CLI over the byte-exact numbering engine: FASTA/FASTQ
+# (protein or DNA, 6-frame), PDB, multi-domain (scFv/tandem), truncated V, NGS batch.
+[[bin]]
+name = "anarci"
+path = "src/main.rs"
+
+[dependencies]
+anarci-core = { path = "../anarci-core" }
+anarci-hmm = { path = "../anarci-hmm" }
+clap = { version = "4", features = ["derive"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rayon = { workspace = true }
+once_cell = { workspace = true }

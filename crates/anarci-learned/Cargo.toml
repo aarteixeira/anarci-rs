@@ -1,0 +1,31 @@
+[package]
+name = "anarci-learned"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+anarci-core = { path = "../anarci-core" }
+# ML runtime — behind the `model` feature so the default codec/augmentation build stays lean.
+candle-core = { version = "0.11", optional = true }
+candle-nn = { version = "0.11", optional = true }
+
+[features]
+# Enables the candle transformer model + training. Default build (codec, augmentation,
+# constrained decode) needs none of it.
+model = ["dep:candle-core", "dep:candle-nn"]
+# GPU backends (add on top of `model`): CUDA for gnode2/Lambda, Metal for Apple MPS.
+cuda = ["model", "candle-core/cuda", "candle-nn/cuda"]
+metal = ["model", "candle-core/metal", "candle-nn/metal"]
+
+[dev-dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+flate2 = { workspace = true }
+
+# Training driver — reads the fixture via dev-deps, needs the `model` feature (candle).
+[[example]]
+name = "train"
+required-features = ["model"]
