@@ -54,7 +54,11 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install llvm
-          echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> "$GITHUB_ENV"
+          task_llvm_root=$(brew --prefix llvm)
+          echo "$task_llvm_root/bin" >> "$GITHUB_PATH"
+          echo "LIBCLANG_PATH=$task_llvm_root/lib" >> "$GITHUB_ENV"
+          echo "CLANG_PATH=$task_llvm_root/bin/clang" >> "$GITHUB_ENV"
+          echo "CC=$task_llvm_root/bin/clang" >> "$GITHUB_ENV"
       - name: Build Linux wheel
         if: runner.os == 'Linux'
         uses: PyO3/maturin-action@423a6347767a8b16e65c2a7a7042e4a921528da8 # v1, inspected 2026-10-15
