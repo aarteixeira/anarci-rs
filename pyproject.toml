@@ -54,5 +54,6 @@ include = [
     { path = "tests/python/*.py", format = "sdist" },
     { path = "tests/python/*.json", format = "sdist" },
     { path = "tests/python/safe_hmmer.txt", format = "sdist" },
+    { path = "tests/packaging/test_source_extraction.py", format = "sdist" },
 ]
 exclude = ["**/__pycache__/**", "**/*.pyc", "workbench/**", "tests/fixtures/**"]

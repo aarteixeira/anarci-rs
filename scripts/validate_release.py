@@ -45,7 +45,9 @@ def allowed_source(path):
     if parts[0] == "python":
         return len(parts) == 3 and parts[1] in WHEEL_PYTHON and parts[2] in WHEEL_PYTHON[parts[1]]
     if parts[0] == "tests":
-        return len(parts) == 3 and parts[1] == "python" and parts[2] in SAFE_TEST_FILES
+        return len(parts) == 3 and (
+            parts[1] == "python" and parts[2] in SAFE_TEST_FILES
+            or parts[1] == "packaging" and parts[2] == "test_source_extraction.py")
     if parts[0] == "scripts":
         return len(parts) == 2 and parts[1] in {"validate_release.py", "benchmark_release.py", "generate_rust_notices.py"}
     if parts[0] == "reference_data":
@@ -131,6 +133,25 @@ def inspect_archive(path):
             if not required_licenses.issubset({PurePosixPath(n).name for n in names}):
                 raise ValueError("sdist is missing license notices")
     return {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "members": len(names)}
+
+
+
+def extract_source_archive(archive_path, destination):
+    """Extract an allowlisted source archive as regular files, on Python 3.9+."""
+    inspect_archive(archive_path)
+    destination = Path(destination).resolve()
+    destination.mkdir(parents=True, exist_ok=False)
+    with tarfile.open(archive_path, "r:*") as archive:
+        members = archive.getmembers()
+        root = safe_member(members[0].name).parts[0]
+        for member in members:
+            if not member.isfile():
+                continue
+            output = destination.joinpath(*safe_member(member.name).parts)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            with archive.extractfile(member) as source, output.open("wb") as target:
+                shutil.copyfileobj(source, target)
+    return destination / root
 
 
 def run(command, cwd, env=None):

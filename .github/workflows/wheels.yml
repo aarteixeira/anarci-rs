@@ -82,7 +82,7 @@ jobs:
           python -m pip install 'maturin==1.13.3' 'twine==6.2.0'
           maturin sdist --out sourcehouse
           python -m twine check wheelhouse/* sourcehouse/*
-          python -c "import glob, tarfile; tarfile.open(glob.glob('sourcehouse/*.tar.gz')[0]).extractall('source-test', filter='data')"
+          python -c "import glob, runpy; runpy.run_path('scripts/validate_release.py')['extract_source_archive'](glob.glob('sourcehouse/*.tar.gz')[0], 'source-test')"
       - name: Clean install and test outside checkout
         run: |
           python -m venv "$RUNNER_TEMP/wheel-test"
@@ -118,34 +118,8 @@ jobs:
         run: |
           maturin sdist --out sourcehouse
           python -m twine check sourcehouse/*
-          python - <<'PY'
-          import glob
-          import tarfile
-          with tarfile.open(glob.glob('sourcehouse/*.tar.gz')[0]) as archive:
-              members = archive.getnames()
-              root = members[0].split('/')[0]
-              required = [
-                  'reference_data/dat/HMMs/ALL.hmm',
-                  'reference_data/dat/HMMs/FEW.hmm',
-                  'LICENSE', 'NOTICE.md',
-                  'licenses/ANARCI-BSD-3-Clause.txt',
-                  'licenses/HMMER-LICENSE.txt', 'licenses/Easel-LICENSE.txt',
-                  'licenses/CC-BY-4.0.txt', 'licenses/IMGT-DATA-TERMS.txt',
-                  'licenses/RUST-THIRD-PARTY.txt',
-                  'python/anarci/__init__.py', 'python/anarci_rs/__init__.py',
-              ]
-              for path in required:
-                  assert f'{root}/{path}' in members, path
-              assert any('/tests/python/test_' in path for path in members)
-              allowed = {'PKG-INFO', 'Cargo.lock', 'Cargo.toml', 'pyproject.toml',
-                         'README.md', 'LICENSE', 'NOTICE.md', 'crates', 'python',
-                         'reference_data', 'licenses', 'docs', 'tests', 'scripts'}
-              for path in members:
-                  parts = path.split('/')
-                  assert len(parts) < 2 or parts[1] in allowed, path
-                  assert '/workbench/' not in path and '/tests/fixtures/' not in path, path
-              archive.extractall('source-test', filter='data')
-          PY
+          python -m unittest discover -s tests/packaging -v
+          python -c "import glob, runpy; runpy.run_path('scripts/validate_release.py')['extract_source_archive'](glob.glob('sourcehouse/*.tar.gz')[0], 'source-test')"
       - name: Compile extracted source and test clean installation
         run: |
           source_root=$(find "$GITHUB_WORKSPACE/source-test" -mindepth 1 -maxdepth 1 -type d)
