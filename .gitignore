@@ -1,8 +1,16 @@
 /target
 **/target
-Cargo.lock
 *.pyc
 __pycache__/
 /dist
 *.so
 .venv/
+# workbench: version the pipeline code + manifests (the method); ignore data and outputs
+workbench/**
+!workbench/pdb-ab-census/
+!workbench/pdb-ab-census/*.py
+!workbench/pdb-ab-census/*.sh
+!workbench/pdb-ab-census/*.md
+!workbench/pdb-ab-census/*.js
+!workbench/pdb-ab-census/manifests/
+!workbench/pdb-ab-census/manifests/**

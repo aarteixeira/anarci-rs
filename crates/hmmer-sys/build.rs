@@ -15,29 +15,71 @@ use std::process::Command;
 
 const HMMER_DIR: &str = "hmmer-3.4";
 const HMMER_TARBALL_NAME: &str = "hmmer-3.4.tar.gz";
-const HMMER_URL: &str = "http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz";
+const HMMER_URL: &str = "https://eddylab.org/software/hmmer/hmmer-3.4.tar.gz";
 const HMMER_SHA256: &str = "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3";
 
 fn main() {
+    let host = std::env::var("HOST").expect("HOST");
+    let target = std::env::var("TARGET").expect("TARGET");
+    assert_eq!(
+        host, target,
+        "HMMER source builds require a native toolchain; cross compilation is not configured"
+    );
+    assert!(
+        target.ends_with("-apple-darwin") || target.ends_with("-unknown-linux-gnu"),
+        "Supported build targets are native macOS and glibc Linux"
+    );
+    assert!(
+        matches!(
+            std::env::var("CARGO_CFG_TARGET_ARCH").as_deref(),
+            Ok("x86_64" | "aarch64")
+        ),
+        "Supported build architectures are x86_64 and aarch64"
+    );
     let manifest = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let out = PathBuf::from(std::env::var("OUT_DIR").unwrap());
     let hmmer = out.join(HMMER_DIR);
     let easel = hmmer.join("easel");
     let libhmmer = hmmer.join("src/libhmmer.a");
     let libeasel = easel.join("libeasel.a");
+    let config = format!(
+        "{target}|{:?}|{:?}|{:?}|{:?}|pic-baseline-v1",
+        std::env::var_os("CC"),
+        std::env::var_os("CFLAGS"),
+        std::env::var_os("CPPFLAGS"),
+        std::env::var_os("LDFLAGS")
+    );
+    let stamp = out.join("native-build-config.txt");
+    let changed = std::fs::read_to_string(&stamp).ok().as_deref() != Some(config.as_str());
+    if changed && hmmer.join("Makefile").exists() {
+        run(
+            Command::new("make").arg("distclean").current_dir(&hmmer),
+            "make distclean",
+        );
+    }
 
-    if !libhmmer.exists() || !libeasel.exists() {
+    if changed || !libhmmer.exists() || !libeasel.exists() {
         if !hmmer.join("configure").exists() {
             obtain_source(&out);
         }
         build_c(&hmmer);
-        assert!(libhmmer.exists(), "configure/make did not produce {libhmmer:?}");
-        assert!(libeasel.exists(), "configure/make did not produce {libeasel:?}");
+        assert!(
+            libhmmer.exists(),
+            "configure/make did not produce {libhmmer:?}"
+        );
+        assert!(
+            libeasel.exists(),
+            "configure/make did not produce {libeasel:?}"
+        );
+        std::fs::write(stamp, config).expect("write native build configuration");
     }
 
     // Link the static archives. Easel must come after hmmer (hmmer depends on
     // easel symbols); the linker resolves left-to-right for static archives.
-    println!("cargo:rustc-link-search=native={}", hmmer.join("src").display());
+    println!(
+        "cargo:rustc-link-search=native={}",
+        hmmer.join("src").display()
+    );
     println!("cargo:rustc-link-search=native={}", easel.display());
     println!("cargo:rustc-link-lib=static=hmmer");
     println!("cargo:rustc-link-lib=static=easel");
@@ -61,11 +103,17 @@ fn main() {
         .generate()
         .expect("bindgen failed");
 
-    bindings.write_to_file(out.join("bindings.rs")).expect("write bindings.rs");
+    bindings
+        .write_to_file(out.join("bindings.rs"))
+        .expect("write bindings.rs");
 
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-env-changed=HMMER_TARBALL");
+    println!("cargo:rerun-if-env-changed=CC");
+    println!("cargo:rerun-if-env-changed=CFLAGS");
+    println!("cargo:rerun-if-env-changed=CPPFLAGS");
+    println!("cargo:rerun-if-env-changed=LDFLAGS");
     println!("cargo:rerun-if-changed={}", libhmmer.display());
 }
 
@@ -93,7 +141,11 @@ fn obtain_source(out: &Path) {
     );
 
     run(
-        Command::new("tar").arg("xzf").arg(&tarball).arg("-C").arg(out),
+        Command::new("tar")
+            .arg("xzf")
+            .arg(&tarball)
+            .arg("-C")
+            .arg(out),
         "tar extract",
     );
 }
@@ -125,19 +177,34 @@ fn sha256_hex(path: &Path) -> String {
 
 fn build_c(hmmer: &Path) {
     if !hmmer.join("Makefile").exists() {
+        let mut cflags = std::env::var("CFLAGS").unwrap_or_else(|_| "-O3".to_owned());
+        cflags.push_str(" -fPIC");
+        if std::env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Ok("x86_64") {
+            cflags.push_str(" -march=x86-64 -mtune=generic");
+        }
         run(
             Command::new("./configure")
+                .env("CFLAGS", cflags)
                 .arg("--enable-static")
                 .arg("--disable-shared")
                 .current_dir(hmmer),
             "configure",
         );
     }
-    let jobs = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(4);
-    run(Command::new("make").arg(format!("-j{jobs}")).current_dir(hmmer), "make");
+    let jobs = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4);
+    run(
+        Command::new("make")
+            .arg(format!("-j{jobs}"))
+            .current_dir(hmmer),
+        "make",
+    );
 }
 
 fn run(cmd: &mut Command, what: &str) {
-    let status = cmd.status().unwrap_or_else(|e| panic!("failed to spawn {what}: {e}"));
+    let status = cmd
+        .status()
+        .unwrap_or_else(|e| panic!("failed to spawn {what}: {e}"));
     assert!(status.success(), "{what} failed with status {status}");
 }

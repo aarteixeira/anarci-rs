@@ -43,6 +43,11 @@ impl GermlineMethod {
 /// Implementations must be thread-safe (`scan_one` is called from rayon workers).
 pub trait HmmEngine: Sync {
     fn scan_one(&self, name: &str, seq: &[u8]) -> Vec<Hsp>;
+
+    /// Fallible entry point for engines that can report native scan errors.
+    fn scan_one_checked(&self, name: &str, seq: &[u8]) -> CResult<Vec<Hsp>> {
+        Ok(self.scan_one(name, seq))
+    }
 }
 
 /// Alignment details for one numbered domain (ANARCI's per-domain dict).
@@ -78,6 +83,39 @@ pub struct SeqResult {
 }
 
 const AMINO_ACIDS: &[u8] = b"ACDEFGHIKLMNPQRSTVWY";
+
+/// Validate a native HMMER query. All ASCII amino-acid letters, including
+/// HMMER's ambiguous and unusual residue codes, are accepted in either case.
+/// The HMMER nonresidue symbol `*` is also accepted.
+/// HMMER's comparison pipeline raises a fatal C exception above 100,000 residues.
+pub fn validate_scan_input(name: &str, sequence: &[u8]) -> CResult<()> {
+    if name.as_bytes().contains(&0) {
+        return Err(assertion!("Query name contains a NUL byte."));
+    }
+    if sequence.len() > 100_000 {
+        return Err(assertion!(
+            "Sequence exceeds the HMMER limit of 100000 residues."
+        ));
+    }
+    if let Some((position, byte)) = sequence
+        .iter()
+        .enumerate()
+        .find(|(_, c)| !c.is_ascii_alphabetic() && **c != b'*')
+    {
+        return Err(assertion!(
+            "Invalid amino acid byte 0x{byte:02x} at position {}.",
+            position + 1
+        ));
+    }
+    Ok(())
+}
+
+fn validate_scan_settings(bit_score_threshold: f64) -> CResult<()> {
+    if !bit_score_threshold.is_finite() {
+        return Err(assertion!("bit_score_threshold must be finite."));
+    }
+    Ok(())
+}
 
 /// `validate_sequence`: reject overly long sequences or non-standard residues.
 pub fn validate_sequence(sequence: &[u8]) -> CResult<()> {
@@ -140,31 +178,46 @@ fn is_subslice(haystack: &[u8], needle: &[u8]) -> bool {
 
 /// `check_for_j`: rescue very long CDR3s where the first pass missed the J region.
 /// Mutates the single-domain state vector in place. Needs the engine for the rescan.
-fn check_for_j(
+pub fn check_for_j(
     engine: &dyn HmmEngine,
     name: &str,
     seq: &[u8],
     state_vectors: &mut [Vec<State>],
     details: &mut [crate::align::DomainDetails],
-) {
+) -> CResult<()> {
+    validate_scan_input(name, seq)?;
+    if state_vectors.len() != details.len() {
+        return Err(assertion!(
+            "State vectors and domain details must have matching lengths."
+        ));
+    }
+    if state_vectors
+        .iter()
+        .flatten()
+        .any(|s| s.si.is_some_and(|i| i >= seq.len()))
+    {
+        return Err(assertion!(
+            "State sequence index exceeds the sequence length."
+        ));
+    }
     if state_vectors.len() != 1 {
-        return; // single-domain chains only
+        return Ok(()); // single-domain chains only
     }
     let ali = &state_vectors[0];
     let last = match ali.last() {
         Some(s) => s,
-        None => return,
+        None => return Ok(()),
     };
     let last_state = last.id as i32;
     let last_si = match last.si {
         Some(v) => v,
-        None => return, // (Python would error; never happens for a real FW4 end)
+        None => return Ok(()), // (Python would error; never happens for a real FW4 end)
     };
     if last_state >= 120 {
-        return;
+        return Ok(());
     }
     if last_si + 30 >= seq.len() {
-        return;
+        return Ok(());
     }
     // Sequence index of conserved cysteine (IMGT 104), as a match state.
     let mut cys_si: Option<usize> = None;
@@ -178,21 +231,21 @@ fn check_for_j(
     }
     let (cys_si, cys_ai) = match (cys_si, cys_ai) {
         (Some(a), Some(b)) => (a, b),
-        _ => return,
+        _ => return Ok(()),
     };
 
     // Rescan the remaining sequence after 104 with a low bit-score threshold.
     let sub = &seq[cys_si + 1..];
-    let hsps = engine.scan_one(name, sub);
+    let hsps = engine.scan_one_checked(name, sub)?;
     let parsed = parse_hmmer_query(&hsps, sub.len(), 10.0, None);
     if parsed.state_vectors.is_empty() {
-        return;
+        return Ok(());
     }
     let re = &parsed.state_vectors[0];
     let re_first = re.first().map(|s| s.id as i32).unwrap_or(0);
     let re_last = re.last().map(|s| s.id as i32).unwrap_or(0);
     if !(re_last >= 126 && re_first <= 117) {
-        return;
+        return Ok(());
     }
 
     // V region up to and including 104.
@@ -201,10 +254,14 @@ fn check_for_j(
     let j_region: Vec<State> = re
         .iter()
         .filter(|s| s.id as i32 >= 117 && s.si.is_some())
-        .map(|s| State { id: s.id, typ: s.typ, si: Some(s.si.unwrap() + cys_si + 1) })
+        .map(|s| State {
+            id: s.id,
+            typ: s.typ,
+            si: Some(s.si.unwrap() + cys_si + 1),
+        })
         .collect();
     if j_region.is_empty() {
-        return;
+        return Ok(());
     }
     let j_first_si = j_region[0].si.unwrap();
     // CDR region between V and J.
@@ -212,9 +269,17 @@ fn check_for_j(
     let mut next = 105i32;
     for si in (cys_si + 1)..j_first_si {
         if next >= 116 {
-            cdr_region.push(State { id: 116, typ: StateType::I, si: Some(si) });
+            cdr_region.push(State {
+                id: 116,
+                typ: StateType::I,
+                si: Some(si),
+            });
         } else {
-            cdr_region.push(State { id: next as u8, typ: StateType::M, si: Some(si) });
+            cdr_region.push(State {
+                id: next as u8,
+                typ: StateType::M,
+                si: Some(si),
+            });
             next += 1;
         }
     }
@@ -225,6 +290,7 @@ fn check_for_j(
     new_sv.extend(j_region);
     state_vectors[0] = new_sv;
     details[0].query_end = j_last_si + 1;
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -240,11 +306,17 @@ fn process_one(
     species_from_germline: bool,
     germline_method: GermlineMethod,
 ) -> CResult<SeqResult> {
-    let hsps = engine.scan_one(name, seq);
+    let hsps = engine.scan_one_checked(name, seq)?;
     let mut parsed = parse_hmmer_query(&hsps, seq.len(), bit_score_threshold, allowed_species);
 
     // check_for_j mutates the alignment in place (long-CDR3 rescue).
-    check_for_j(engine, name, seq, &mut parsed.state_vectors, &mut parsed.details);
+    check_for_j(
+        engine,
+        name,
+        seq,
+        &mut parsed.state_vectors,
+        &mut parsed.details,
+    )?;
 
     let mut hit_numbered: Vec<Numbered> = Vec::new();
     let mut hit_details: Vec<DomainInfo> = Vec::new();
@@ -253,8 +325,7 @@ fn process_one(
         let sv = &parsed.state_vectors[di];
         let det = &parsed.details[di];
         if !sv.is_empty() && allow.contains(&det.chain_type) {
-            let numbered =
-                number_sequence_from_alignment(sv, seq, scheme, Some(&det.chain_type))?;
+            let numbered = number_sequence_from_alignment(sv, seq, scheme, Some(&det.chain_type))?;
             validate_numbering(&numbered, name, seq)?;
             // Pan engine: the HMM "species" is "pan", so derive species (and genes)
             // from germline assignment. Exact engine: keep ANARCI semantics.
@@ -319,7 +390,10 @@ pub fn resolve_scheme(scheme: &str) -> CResult<&'static str> {
         "i" | "imgt" => Ok("imgt"),
         "a" | "aho" => Ok("aho"),
         "w" | "wolfguy" => Ok("wolfguy"),
-        _ => Err(assertion!("Unrecognised or unimplemented scheme: {}", scheme)),
+        _ => Err(assertion!(
+            "Unrecognised or unimplemented scheme: {}",
+            scheme
+        )),
     }
 }
 
@@ -338,7 +412,10 @@ pub fn chain_type_to_class(ct: &str) -> &str {
 
 /// The default allowed chain types: {H,K,L,A,B,G,D}.
 pub fn default_allow() -> BTreeSet<String> {
-    ["H", "K", "L", "A", "B", "G", "D"].iter().map(|s| s.to_string()).collect()
+    ["H", "K", "L", "A", "B", "G", "D"]
+        .iter()
+        .map(|s| s.to_string())
+        .collect()
 }
 
 /// `anarci`: number a list of sequences (sequential).
@@ -355,12 +432,24 @@ pub fn anarci(
     germline_method: GermlineMethod,
 ) -> CResult<Vec<SeqResult>> {
     let scheme = resolve_scheme(scheme)?;
+    validate_scan_settings(bit_score_threshold)?;
+    for (name, seq) in sequences {
+        validate_scan_input(name, seq)?;
+    }
     sequences
         .iter()
         .map(|(name, seq)| {
             process_one(
-                engine, name, seq, scheme, allow, assign_germline, allowed_species,
-                bit_score_threshold, species_from_germline, germline_method,
+                engine,
+                name,
+                seq,
+                scheme,
+                allow,
+                assign_germline,
+                allowed_species,
+                bit_score_threshold,
+                species_from_germline,
+                germline_method,
             )
         })
         .collect()
@@ -381,6 +470,11 @@ pub fn run_anarci(
 ) -> CResult<Vec<SeqResult>> {
     let scheme = resolve_scheme(scheme)?;
 
+    validate_scan_settings(bit_score_threshold)?;
+    for (name, seq) in sequences {
+        validate_scan_input(name, seq)?;
+    }
+
     // Deduplicate identical sequences (lossless: the result depends only on the
     // sequence; the only per-input field, query_name, is restored per original below).
     // This is a free win on repetitive inputs (NGS sets often have many duplicates).
@@ -399,8 +493,16 @@ pub fn run_anarci(
         .par_iter()
         .map(|(name, seq)| {
             process_one(
-                engine, name, seq, scheme, allow, assign_germline, allowed_species,
-                bit_score_threshold, species_from_germline, germline_method,
+                engine,
+                name,
+                seq,
+                scheme,
+                allow,
+                assign_germline,
+                allowed_species,
+                bit_score_threshold,
+                species_from_germline,
+                germline_method,
             )
         })
         .collect::<CResult<Vec<_>>>()?;
@@ -438,6 +540,7 @@ pub fn number(
     bit_score_threshold: f64,
 ) -> CResult<Option<(Numbered, String)>> {
     validate_sequence(sequence)?;
+    validate_scan_settings(bit_score_threshold)?;
     let scheme = resolve_scheme(scheme)?;
     if sequence.len() < min_length {
         return Ok(None);
@@ -447,12 +550,20 @@ pub fn number(
     // solely to derive species, which number() discards — so the cheaper identity
     // method is used regardless of engine, with no effect on the returned output.
     let res = match anarci(
-        engine, &seqs, scheme, allow, false, allowed_species, bit_score_threshold,
-        species_from_germline, GermlineMethod::Identity,
+        engine,
+        &seqs,
+        scheme,
+        allow,
+        false,
+        allowed_species,
+        bit_score_threshold,
+        species_from_germline,
+        GermlineMethod::Identity,
     ) {
         Ok(r) => r,
         // ANARCI catches AssertionError here (e.g. TCR with antibody scheme) -> (False, False).
-        Err(_) => return Ok(None),
+        Err(crate::types::CoreError::Assertion(_)) => return Ok(None),
+        Err(e) => return Err(e),
     };
     let r = &res[0];
     match (&r.numbered, &r.details) {

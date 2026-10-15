@@ -1,0 +1,38 @@
+IMGT data terms: relevant text from the official terms page
+Source: https://www.imgt.org/about/termsofuse.php
+Retrieved: 2026-10-15
+
+Copyright© 1995-2026, IMGT®, the international ImMunoGeneTics information
+system®. All rights reserved.
+
+Conditions of use and license
+
+The IMGT® information system and website were created and are maintained by
+the Institute of Human Genetics - IGH (Université de Montpellier and CNRS),
+as the global reference in immunogenetics and immunoinformatics, for
+scientific research and educational purpose.
+
+As of 1st July 2026, IMGT® has been granted ELIXIR Core Data Resource (CDR)
+status. This designation recognizes life science databases that meet high
+standards of quality, sustainability, and community impact, ensuring the
+provision of trusted and reliable data for both public and private users.
+
+The IMGT® data are provided to both public and private users under the
+CC BY-4.0 license.
+
+For any use of IMGT® tools, please submit your request at the following
+contact : contact-imgt@igh.cnrs.fr.
+
+To support IMGT®’s ongoing development, updates, and operations, a financial
+contribution may be requested from users using the resource, excluding IMGT
+data. More specifically, this does not affect the CC BY 4.0 licence
+applicable to the IMGT® data and metadata.
+
+Advertisement policy
+
+The name of IMGT®, the international ImMunoGeneTics information system®
+should not be associated with publicity or business promotion without
+prior written approval.
+
+This file retains the relevant paragraphs; the linked page is the source.
+The complete CC BY 4.0 license is in CC-BY-4.0.txt.

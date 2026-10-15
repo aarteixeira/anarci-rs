@@ -1,22 +1,58 @@
 [build-system]
-requires = ["maturin>=1.7,<2.0"]
+requires = ["maturin>=1.13,<2.0"]
 build-backend = "maturin"
 
 [project]
 name = "anarci-rs"
 version = "0.1.0"
-description = "Rust reimplementation of ANARCI (antibody/TCR numbering); drop-in for `import anarci`."
+description = "Antigen receptor numbering with a Rust backend and ANARCI-compatible Python API."
 readme = "README.md"
-requires-python = ">=3.8"
-license = { text = "BSD-3-Clause" }
+requires-python = ">=3.9,<3.14"
+license = "BSD-3-Clause AND CC-BY-4.0"
+license-files = ["LICENSE", "NOTICE.md", "licenses/*.txt"]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
+[project.scripts]
+anarci-rs = "anarci_rs.cli:main"
+
+[project.optional-dependencies]
+legacy-parser = ["biopython>=1.78"]
+
+[project.urls]
+Repository = "https://github.com/aarteixeira/anarci-rs"
+Issues = "https://github.com/aarteixeira/anarci-rs/issues"
+
 [tool.maturin]
 manifest-path = "crates/anarci-py/Cargo.toml"
-module-name = "anarci_rs"
+module-name = "anarci_rs._native"
+python-source = "python"
+python-packages = ["anarci_rs", "anarci"]
 # HMMER is statically linked and ALL.hmm is embedded in the extension -> zero runtime deps.
 features = ["pyo3/extension-module"]
+include = [
+    { path = "reference_data/dat/HMMs/ALL.hmm", format = "sdist" },
+    { path = "reference_data/dat/HMMs/FEW.hmm", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
+    { path = "NOTICE.md", format = "sdist" },
+    { path = "licenses/*.txt", format = "sdist" },
+    { path = "docs/BUILDING.md", format = "sdist" },
+    { path = "docs/RELEASING.md", format = "sdist" },
+    { path = "docs/API.md", format = "sdist" },
+    { path = "docs/COMPATIBILITY.md", format = "sdist" },
+    { path = "docs/EXPERIMENTAL.md", format = "sdist" },
+    { path = "docs/RELEASE_EVIDENCE.md", format = "sdist" },
+    { path = "docs/FEATURE_COVERAGE.md", format = "sdist" },
+    { path = "docs/PERFORMANCE.md", format = "sdist" },
+    { path = "docs/reference-version.json", format = "sdist" },
+    { path = "scripts/validate_release.py", format = "sdist" },
+    { path = "scripts/benchmark_release.py", format = "sdist" },
+    { path = "scripts/generate_rust_notices.py", format = "sdist" },
+    { path = "tests/python/*.py", format = "sdist" },
+    { path = "tests/python/*.json", format = "sdist" },
+    { path = "tests/python/safe_hmmer.txt", format = "sdist" },
+]
+exclude = ["**/__pycache__/**", "**/*.pyc", "workbench/**", "tests/fixtures/**"]

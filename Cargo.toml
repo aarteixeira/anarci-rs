@@ -1,13 +1,13 @@
 [workspace]
 resolver = "2"
-members = ["crates/anarci-core", "crates/hmmer-sys", "crates/anarci-hmm", "crates/anarci-py"]
+members = ["crates/anarci-core", "crates/hmmer-sys", "crates/anarci-hmm", "crates/anarci-py", "crates/anarci-learned", "crates/anarci-cli"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
 license = "BSD-3-Clause"
 authors = ["anarci-rs"]
-repository = "https://github.com/anarci-rs/anarci-rs"
+repository = "https://github.com/aarteixeira/anarci-rs"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

@@ -1,0 +1,193 @@
+name: Candidate Python distributions
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'pyproject.toml'
+      - 'crates/**'
+      - 'python/**'
+      - 'tests/python/**'
+      - 'licenses/**'
+      - 'LICENSE'
+      - 'NOTICE.md'
+      - 'docs/BUILDING.md'
+      - 'docs/RELEASING.md'
+      - '.github/workflows/wheels.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  wheel:
+    name: ${{ matrix.platform }} / CPython ${{ matrix.python }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        include:
+          - platform: linux-x86_64
+            runner: ubuntu-24.04
+            target: x86_64
+          - platform: linux-aarch64
+            runner: ubuntu-24.04-arm
+            target: aarch64
+          - platform: macos-x86_64
+            runner: macos-15-intel
+            target: x86_64
+          - platform: macos-arm64
+            runner: macos-15
+            target: aarch64
+        platform: [linux-x86_64, linux-aarch64, macos-x86_64, macos-arm64]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+      - name: Install macOS bindgen prerequisites
+        if: runner.os == 'macOS'
+        run: |
+          brew install llvm
+          echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> "$GITHUB_ENV"
+      - name: Build Linux wheel
+        if: runner.os == 'Linux'
+        uses: PyO3/maturin-action@423a6347767a8b16e65c2a7a7042e4a921528da8 # v1, inspected 2026-10-15
+        with:
+          maturin-version: '1.13.3'
+          target: ${{ matrix.target }}
+          manylinux: '2_28'
+          before-script-linux: dnf install -y clang clang-devel llvm-devel
+          args: --release --locked --compatibility pypi --interpreter python${{ matrix.python }} --out wheelhouse
+      - name: Build macOS wheel
+        env:
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+        if: runner.os == 'macOS'
+        uses: PyO3/maturin-action@423a6347767a8b16e65c2a7a7042e4a921528da8 # v1, inspected 2026-10-15
+        with:
+          maturin-version: '1.13.3'
+          target: ${{ matrix.target }}
+          args: --release --locked --compatibility pypi --interpreter python --out wheelhouse
+      - name: Build source archive for independent tests
+        run: |
+          python -m pip install 'maturin==1.13.3' 'twine==6.2.0'
+          maturin sdist --out sourcehouse
+          python -m twine check wheelhouse/* sourcehouse/*
+          python -c "import glob, tarfile; tarfile.open(glob.glob('sourcehouse/*.tar.gz')[0]).extractall('source-test', filter='data')"
+      - name: Clean install and test outside checkout
+        run: |
+          python -m venv "$RUNNER_TEMP/wheel-test"
+          "$RUNNER_TEMP/wheel-test/bin/python" -m pip install wheelhouse/*.whl
+          source_root=$(find "$GITHUB_WORKSPACE/source-test" -mindepth 1 -maxdepth 1 -type d)
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/wheel-test/bin/python" -I -m unittest discover -s "$source_root/tests/python" -v
+          "$RUNNER_TEMP/wheel-test/bin/anarci-rs" --help
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.platform }}-cp${{ matrix.python }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+          retention-days: 14
+
+  sdist:
+    name: Independent source archive build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+      - name: Install build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang libclang-dev curl
+          python -m pip install 'maturin==1.13.3' 'twine==6.2.0'
+      - name: Build and inspect source archive
+        run: |
+          maturin sdist --out sourcehouse
+          python -m twine check sourcehouse/*
+          python - <<'PY'
+          import glob
+          import tarfile
+          with tarfile.open(glob.glob('sourcehouse/*.tar.gz')[0]) as archive:
+              members = archive.getnames()
+              root = members[0].split('/')[0]
+              required = [
+                  'reference_data/dat/HMMs/ALL.hmm',
+                  'reference_data/dat/HMMs/FEW.hmm',
+                  'LICENSE', 'NOTICE.md',
+                  'licenses/ANARCI-BSD-3-Clause.txt',
+                  'licenses/HMMER-LICENSE.txt', 'licenses/Easel-LICENSE.txt',
+                  'licenses/CC-BY-4.0.txt', 'licenses/IMGT-DATA-TERMS.txt',
+                  'licenses/RUST-THIRD-PARTY.txt',
+                  'python/anarci/__init__.py', 'python/anarci_rs/__init__.py',
+              ]
+              for path in required:
+                  assert f'{root}/{path}' in members, path
+              assert any('/tests/python/test_' in path for path in members)
+              allowed = {'PKG-INFO', 'Cargo.lock', 'Cargo.toml', 'pyproject.toml',
+                         'README.md', 'LICENSE', 'NOTICE.md', 'crates', 'python',
+                         'reference_data', 'licenses', 'docs', 'tests', 'scripts'}
+              for path in members:
+                  parts = path.split('/')
+                  assert len(parts) < 2 or parts[1] in allowed, path
+                  assert '/workbench/' not in path and '/tests/fixtures/' not in path, path
+              archive.extractall('source-test', filter='data')
+          PY
+      - name: Compile extracted source and test clean installation
+        run: |
+          source_root=$(find "$GITHUB_WORKSPACE/source-test" -mindepth 1 -maxdepth 1 -type d)
+          cd "$source_root"
+          maturin build --release --locked --interpreter python --out "$RUNNER_TEMP/source-wheel"
+          cargo test --locked -p anarci-core --lib
+          cargo test --locked -p anarci-core --test native_input_contract
+          cargo test --locked -p anarci-hmm --lib robustness_tests
+          cargo test --locked -p anarci-cli --lib
+          python -m venv "$RUNNER_TEMP/source-install"
+          "$RUNNER_TEMP/source-install/bin/python" -m pip install "$RUNNER_TEMP"/source-wheel/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/source-install/bin/python" -I -m unittest discover -s "$source_root/tests/python" -v
+          "$RUNNER_TEMP/source-install/bin/anarci-rs" --help
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source-distribution
+          path: sourcehouse/*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+
+  optional-model:
+    name: Optional CPU model bindings
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+      - name: Install native build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang libclang-dev curl
+          python -m pip install 'maturin==1.13.3'
+      - name: Build optional model feature and verify retained notices
+        run: |
+          maturin build --release --locked --features learned-model --interpreter python --out model-wheel
+          cargo fetch --locked
+          python scripts/generate_rust_notices.py --check
+      - name: Test optional model bindings in isolation
+        run: |
+          python -m venv "$RUNNER_TEMP/model-install"
+          "$RUNNER_TEMP/model-install/bin/python" -m pip install model-wheel/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/model-install/bin/python" -I -m unittest discover -s "$GITHUB_WORKSPACE/tests/python" -p 'test_optional_model.py' -v
