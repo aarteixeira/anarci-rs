@@ -129,3 +129,23 @@ to a release date in that grant. The packaging work records the terms, attributi
 source provenance and full license separately from the project's BSD license.
 This is our Rust implementation, with compatibility imports and bundled components;
 the original ANARCI distribution is not the release artifact.
+
+## Release qualification outcome
+
+On 2026-10-15 Andre approved a scoped release branch, push and draft PR. The
+release branch was based on `main`, with the required package/feature files
+carried over from the verified source archive. Unrelated workbench commits and
+local edits were excluded. The review is PR #3:
+https://github.com/aarteixeira/anarci-rs/pull/3.
+
+CI exposed a macOS LLVM/header mismatch and a Python 3.9 source-extraction API
+mismatch. The workflow now selects matching compiler/libclang tools and shares a
+portable validated extractor. Three packaging security regressions passed, and
+independent review found no remaining issue in those changes.
+
+All 22 checks passed for runtime/build commit
+`fc266797eb4536c5c5bca238ccc20d238dfa109e` in run 38799456047, attempt 2:
+20 wheels across the declared matrix, independent source build and optional CPU
+model. One checkout stalled and was rerun after confirmed cancellation; completed
+checks were retained. Final artifact inspection and the release manifest bind the
+qualified files to their hashes. Publication remains a separately authorized step.

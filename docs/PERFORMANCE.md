@@ -45,3 +45,26 @@ The reference environment must match the hashes in `reference-version.json` and
 have its HMMER executable available. The native environment uses the built wheel.
 For machines that restrict CPU metadata queries, pass `--cpu-model` with an
 independently verified model name. The benchmark records this supplied value.
+
+## CI wheel verification
+
+The GitHub-built macOS ARM64 CPython 3.10 wheel was measured again on the same
+machine and distinct 32-sequence workload, with the same settings and repetitions.
+The runtime source was commit `fc266797eb4536c5c5bca238ccc20d238dfa109e`.
+
+| Workers | Reference ANARCI | CI wheel exact | CI wheel pan, identity assignment |
+|---|---:|---:|---:|
+| 1 | 58.73 sequences/s | 107.31 sequences/s | 530.04 sequences/s |
+| 4 | 105.99 sequences/s | 426.18 sequences/s | 1914.05 sequences/s |
+
+Paired wrapper/direct time ratios ranged from 0.924 to 1.015 in this run. The
+machine-readable `ci-wheel-performance-results.json` records the wheel's native
+extension hash, each duration and the exact API settings.
+
+With germline assignment enabled and its default evalue method, the same pan
+wheel processed 201.48 sequences/s with one worker and 772.59 with four workers.
+The alignment-based assignment adds work compared with identity matching.
+These additional measurements used the same inputs, human/mouse restriction,
+one warmup and three timed repeats. Their record is
+`ci-evalue-pan-performance.json`. Compare methods explicitly when choosing a
+throughput setting.

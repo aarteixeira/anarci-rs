@@ -1,7 +1,8 @@
 # Release evidence
 
-Version 0.1.0 is a local release candidate. The configured remote wheel matrix
-has not run. No package-index upload has occurred.
+Version 0.1.0 is a verified release candidate. All 22 CI checks passed for runtime
+commit `fc266797eb4536c5c5bca238ccc20d238dfa109e`, including the 20-wheel platform
+matrix. No package-index upload has occurred.
 
 ## Implemented surface
 
@@ -26,6 +27,8 @@ The plan passed two review rounds. Implementation review found and resolved:
 - Legacy argument order, input containers, output generation, species-filter
   edge cases and deprecated helper insertion rules.
 - Missing source-build resources, license materials and installed CLI delivery.
+- macOS compiler/libclang header alignment and Python 3.9-compatible source
+  extraction, with tests for traversal, links, permissions and existing files.
 
 The final independent source review found no remaining actionable issue within
 its reviewed scope. That result is separate from artifact and platform tests.
@@ -38,6 +41,7 @@ its reviewed scope. That result is separate from artifact and platform tests.
 | Core native input contracts | 4 passed |
 | Existing core source unit tests | 19 passed |
 | Shared CLI library tests | 23 passed |
+| Portable source extraction tests | 3 passed |
 | Optional CPU model build | Passed |
 | Experimental codec/data tests in optional build | 6 passed |
 | Optional model shape/validation/training tests | 3 passed |
@@ -66,16 +70,37 @@ The completed matched-work benchmark and paired wrapper timing are described in
 
 ## Platform qualification
 
-Local macOS ARM64 wheels passed the 40-test installed-package suite on CPython
-3.9, 3.10, 3.11, 3.12 and 3.13. The default builds skip the optional saved-text
-parser test and three model tests; those features have separate passing checks.
-Final clean wheel/source installation records and artifact hashes are delivered
-beside the candidate files. Linux x86_64/aarch64 and macOS Intel require successful
-remote CI before they qualify as tested release targets. The workflow includes
-no publication job.
+[CI run 38799456047](https://github.com/aarteixeira/anarci-rs/actions/runs/38799456047),
+attempt 2, completed successfully on 2026-10-15.
 
-Local workflow checks include actionlint 1.7.12 and a fresh Cargo-cache simulation.
-The latter reproduced a missing-platform-dependency failure in the offline notices
-check; a full locked fetch before that check resolved it. The release validator
-uses symlink environments on POSIX so standalone Python launchers retain their
-base runtime's shared-library lookup.
+| Platform | Architecture | CPython | Wheel baseline |
+|---|---|---|---|
+| Linux | x86_64 | 3.9 through 3.13 | manylinux_2_28 |
+| Linux | aarch64 | 3.9 through 3.13 | manylinux_2_28 |
+| macOS | x86_64 | 3.9 through 3.13 | macOS 11 |
+| macOS | ARM64 | 3.9 through 3.13 | macOS 11 |
+
+Each of the 20 wheels passed metadata checks, a clean installation, the 40-test
+Python suite and the installed command check. The default builds skip the optional
+saved-text parser test and three model tests; those features have separate passing
+checks. The independent Linux source job compiled the extracted archive, ran the
+selected Rust and packaging tests, and verified a clean installation. The optional
+CPU-model job passed its feature build, notices check and model tests.
+
+One Intel Python 3.10 runner stalled in repository checkout. Its cancelled attempt
+was rerun on a fresh runner; the other 21 successful checks were retained. The
+successful rerun reached the build and tests without source changes.
+
+Local macOS ARM64 qualification also covers CPython 3.9 through 3.13. The actual
+CI-built ARM64 Python 3.10 wheel was installed locally for the additional
+performance measurements in `PERFORMANCE.md`.
+
+Final artifact names, hashes, tags, GitHub artifact digests and job records are
+delivered in the release manifest. The workflow contains no publication job.
+
+Workflow checks also include actionlint 1.7.12 and a fresh Cargo-cache simulation.
+A full locked fetch supplies the cross-platform metadata needed for the offline
+notices check. Portable extraction validates member names/types before writing
+regular files, and preserves existing destinations. The local release validator
+uses POSIX symlink environments so standalone Python launchers retain their base
+runtime's shared-library lookup.
