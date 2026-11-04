@@ -1,0 +1,235 @@
+{
+  "atlas_id": "oas-multispecies-pilot",
+  "checksum_scope": "SHA256 of complete local downloads, pinned for reproduction; not upstream-published hashes",
+  "citation": "Olsen TH, Boyles F, Deane CM. Observed Antibody Space. Protein Science 31:141\u2013146. doi:10.1002/pro.4205",
+  "excluded_sources": [
+    {
+      "evidence_url": "https://www.nature.com/articles/s41467-021-25777-z",
+      "reason": "CeVICA randomized synthetic VHH library and in-vitro selection; not natural llama repertoire",
+      "study": "Chen_2021"
+    },
+    {
+      "evidence_url": "https://pubmed.ncbi.nlm.nih.gov/31411543/",
+      "reason": "Fab-immunized alpaca phage libraries, biopanning and error-prone-PCR maturation; selected run unsuitable as unselected reference",
+      "study": "Rafique_2019"
+    },
+    {
+      "evidence_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10341490/",
+      "reason": "Immunized alpaca and tumor-cell phage-library enrichment; selected run unsuitable as unselected reference",
+      "study": "Rafique_2023"
+    },
+    {
+      "evidence_url": "https://www.nature.com/articles/s41586-022-05371-z/tables/3",
+      "reason": "Selected donor3 has type1diabetes in primary ExtendedDataTable1, contradicting OAS Disease=None; excluded from this healthy/control reference selection, not all Jaffe study data.",
+      "study": "Jaffe_2022",
+      "unit": "1279066_1_Heavy_IGHM.csv.gz (Donor-3)"
+    }
+  ],
+  "limitations": [
+    "Camelid OAS-nano redistribution license not independently confirmed; retain raw/model artifacts local until rights review.",
+    "Unknown donor identifiers and limited study coverage produce research_only profiles.",
+    "Study-level separation plus exact-sequence/CDR3-V-family filtering is not a proof of clonal independence or model generalization.",
+    "Both camelid profiles are single-study training-only: no reference percentile or held-out performance claim."
+  ],
+  "schema_version": 1,
+  "selection": {
+    "biological_origin": "reviewed natural repertoire, not synthetic or antigen-panned/mutagenized libraries",
+    "camelid_split": "training-only; one eligible study each, no invented held-out calibration",
+    "chain": "Heavy",
+    "healthy": "OAS Disease=None selected; source-specific healthy/control interpretation documented in origin_evidence",
+    "position_policy": "99% prevalence in each training cohort; common framework panel within chain/format; discard incomplete train rows; never use calibration/test for selection",
+    "sample_size_per_unit": 2000,
+    "sampling": "deterministic reservoir over all eligible rows of complete units",
+    "seed": 1729,
+    "selection_bias": "purposively selected small units with study-disjoint train/calibration/test; not a species population census",
+    "vaccine": "None"
+  },
+  "source": "Official OAS and OAS-nano unit downloads",
+  "units": [
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 4490106,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Primary study sequences sorted naive and memory B cells from peripheral blood of five nominally healthy twin pairs, direct RNA/UMI repertoire libraries. Selected unit is PBMC memory B cells Subject-TW03B; OAS Disease=None/Vaccine=None. No antigen panning or synthetic construction.",
+        "url": "https://www.nature.com/articles/ncomms11112"
+      },
+      "sha256": "bcc5b644e4d2a50d21783e58b48b9aad91ef5720dca889ce789c75a87ac8e23d",
+      "species": "human",
+      "split": "calibration",
+      "study": "Rubelt_2016",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Rubelt_2016/csv/SRR2905685_Heavy_IGHA.csv.gz",
+      "vhh_evidence": null
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 6115345,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Primary study sequences sorted naive/memory B-cell repertoires in myasthenia gravis AND healthy controls. Selected unit is HD10 PBMC, Disease=None/Vaccine=None, not a patient unit. Natural cell-derived repertoire, not antigen-panned library.",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/28087666/"
+      },
+      "sha256": "c3dd4e9d577988f1352bf325f97731f1dbe23b289baac90598616af35ca6f793",
+      "species": "human",
+      "split": "test",
+      "study": "Vander_Heiden_2017",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Vander_Heiden_2017/csv/SRR4026010_1_Heavy_IGHA.csv.gz",
+      "vhh_evidence": null
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 5281457,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Primary study analyzes antibody repertoires across B-cell development. Selected unit specifically C57BL/6-Mouse-2 spleen Naive-B-Cells, Disease=None/Vaccine=None; direct natural repertoire rather than immunized/plasma-cell experimental arms. No synthetic or antigen-panned construction indicated.",
+        "url": "https://doi.org/10.1016/j.celrep.2017.04.054"
+      },
+      "sha256": "b57ea913977ff09d94c15491bd215d7a7c3fd246ca5a696cc099b70a89fe2afa",
+      "species": "mouse",
+      "split": "train",
+      "study": "Greiff_2017",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Greiff_2017/csv/ERR1759668_1_Heavy_Bulk.csv.gz",
+      "vhh_evidence": null
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 2059079,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Primary IgDiscover paper profiles expressed antibody repertoires and compares BALB/c versus C57BL/6 mice. Selected unit M2 BALB/c PBMC, Disease=None/Vaccine=None; observed rearranged RNA repertoire, not inferred germline sequences or synthetic construction.",
+        "url": "https://www.nature.com/articles/ncomms13642"
+      },
+      "sha256": "08cb49c9d16de79668af7f52b636dcf76bf160dd43a55474c4065998faf505a1",
+      "species": "mouse",
+      "split": "train",
+      "study": "Corcoran_2016",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Corcoran_2016/csv/ERR1759752_1_Heavy_Bulk.csv.gz",
+      "vhh_evidence": null
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 27269429,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Methods directly extract splenocyte RNA from eight mice per strain, pool equal RNA concentrations and sequence 5-prime RACE amplified VDJC. Selected C57BL/6 spleen IGHG unit is naturally derived but pooled donors; OAS Disease=None/Vaccine=None. Unknown donor is genuinely pooled/unspecified, not individual identity.",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4528413/"
+      },
+      "sha256": "3979d9d89104233ad5424a2005860eb2489ee9c7cdc722e9e069b3f1e77ae81b",
+      "species": "mouse",
+      "split": "calibration",
+      "study": "Collins_2015",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Collins_2015/csv/ERR849860_Heavy_IGHG.csv.gz",
+      "vhh_evidence": null
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 2132595,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Primary abstract reports pooled splenic tissue of unimmunized adult C57BL/6J mice with unamplified high-throughput repertoire sequencing. Natural unselected repertoire; selected OAS spleen IGHM unit Disease=None/Vaccine=None. Pooled donors cannot support individual balancing.",
+        "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0190982"
+      },
+      "sha256": "0a2b7ce29b38efe21361b855d7ebbda7cc9a53845c1a0a93a5e09f26911bc8c3",
+      "species": "mouse",
+      "split": "test",
+      "study": "Rettig_2018",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Rettig_2018/csv/rettig_2018_05_1_Heavy_IGHM.csv.gz",
+      "vhh_evidence": null
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 3825612,
+      "domain_format": "VHH",
+      "library_selection": "unselected",
+      "license": "license requires independent nano confirmation",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Methods explicitly collect fresh blood from two NON-IMMUNIZED llamas, isolate PBMCs and RNA, prepare UMI-labelled RACE sequencing libraries with IGHC2b/IGHC2c primers. SRA PRJNA984324. Selected SRR24939906 is direct natural VHH repertoire. Only one verified llama study retained; training-only, no calibration/test.",
+        "url": "https://www.nature.com/articles/s42003-023-05241-y"
+      },
+      "sha256": "792094b08df96975df8c5fea5181b6494582b49a8902d014b04399a5b1ab80c9",
+      "species": "llama",
+      "split": "train",
+      "study": "Dizicheh_2023",
+      "url": "https://oas-nano.opig.stats.ox.ac.uk/download/unpaired/Dizicheh_2023/csv/SRR24939906_1_Heavy_IGHG2C.csv.gz",
+      "vhh_evidence": "https://oas-nano.opig.stats.ox.ac.uk/documentation/"
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 13510954,
+      "domain_format": "VHH",
+      "library_selection": "unselected",
+      "license": "license requires independent nano confirmation",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Methods explicitly collect PBMCs from22 alpacas BEFORE IMMUNIZATION, sequence libraries built with VHH hinge and leader primers. SRA PRJNA1148326. Selected SRR30246848 donorA058 is direct natural VHH repertoire. Previous provisional test allocation withdrawn after invalid atlas; sole valid alpaca study now training-only, no heldout performance claim.",
+        "url": "https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2024.1447212/full"
+      },
+      "sha256": "eb76da56aba42d7e00fbfb7cc275f85d2c4da97667fe8da73915bf76bb2be661",
+      "species": "alpaca",
+      "split": "train",
+      "study": "Wang_2024",
+      "url": "https://oas-nano.opig.stats.ox.ac.uk/download/unpaired/Wang_2024/csv/SRR30246848_1_Heavy_Bulk.csv.gz",
+      "vhh_evidence": "https://oas-nano.opig.stats.ox.ac.uk/documentation/"
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 4375097,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Primary study sequences human peripheral blood B-cell receptor repertoires and reports shared clonotypes. Selected Subject-HIP1 PBMC bulk unit Disease=None/Vaccine=None is direct repertoire sequencing, not synthetic or antigen-selected library.",
+        "url": "https://www.nature.com/articles/s41586-019-0934-8"
+      },
+      "sha256": "035a238002b5f16d313ec5be6fb713436b954022380d1190fe32bb7fa3d8c32d",
+      "species": "human",
+      "split": "train",
+      "study": "Soto_2019",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Soto_2019/csv/SRR8365399_2_Heavy_Bulk.csv.gz"
+    },
+    {
+      "biological_origin": "natural_repertoire",
+      "compressed_bytes": 5447414,
+      "domain_format": "VH",
+      "library_selection": "unselected",
+      "license": "CC-BY-4.0",
+      "license_evidence": "https://opig.stats.ox.ac.uk/webapps/oas/",
+      "origin_evidence": {
+        "review_note": "Primary protocol is full-length immunoglobulin repertoire profiling with UMIs introduced during cDNA synthesis; experimental datasets include human naive/plasma/memory B cells, separately from CLL controls. Selected Donor-3 PBMC IGHM unit Disease=None/Vaccine=None is natural RNA repertoire, not synthetic construction. OAS Author says2015 while study directory/paper publication2016; retain directory identifier and source DOI.",
+        "url": "https://www.nature.com/articles/nprot.2016.093"
+      },
+      "sha256": "e878b7d729cb18ae8ef18f6e6921749151964fe410b5ecb68107b60f424e97bc",
+      "species": "human",
+      "split": "train",
+      "study": "Turchaninova_2016",
+      "url": "https://opig.stats.ox.ac.uk/webapps/ngsdb/unpaired/Turchaninova_2016/csv/SRR2558612_Heavy_IGHM.csv.gz"
+    }
+  ],
+  "unsupported": [
+    "canine: absent from audited OAS species choices",
+    "light chains: not selected in this initial heavy-chain pilot",
+    "paired Fv scoring: not implemented",
+    "human VHH adaptation: no validated format bridge"
+  ],
+  "version": "2026-11-04-natural-v1"
+}

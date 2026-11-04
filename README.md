@@ -107,6 +107,17 @@ decoder, augmentation and dataset utilities. The optional Candle model/training
 code remains available in the Rust crate. The package supplies no validated
 trained numbering checkpoint. See [EXPERIMENTAL.md](docs/EXPERIMENTAL.md).
 
+## Species nativeness and adaptation
+
+The experimental `anarci_rs.species_adaptation` module and `anarci-species` command
+score explicitly supplied repertoire profiles and propose conservative framework
+substitutions. A reproducible OAS/OAS-nano retrieval recipe builds real-data pilot
+references; no species models are silently bundled or downloaded. Scores describe
+reference compatibility, not biological fitness or immunogenicity. Mutation proposals
+carry score-only evidence and require independent functional testing.
+See [SPECIES_ADAPTATION.md](docs/SPECIES_ADAPTATION.md) for acquisition, calibration,
+supported formats, protection rules and limitations.
+
 ## Command line
 
 ```bash

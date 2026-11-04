@@ -23,14 +23,14 @@ import zipfile
 
 REPO = Path(__file__).resolve().parents[1]
 SAFE_TEST_FILES = {"safe_reference.py", "safe_expected.json", "safe_consensus.json", "safe_alignment.json", "safe_helpers.json", "safe_hmmer.txt", "test_api.py",
-                   "test_compat.py", "test_experimental.py", "test_integration.py", "test_console_entry.py", "test_optional_model.py", "test_properties.py"}
+                   "test_compat.py", "test_experimental.py", "test_integration.py", "test_console_entry.py", "test_optional_model.py", "test_properties.py", "test_species_reference.py", "test_species_adaptation.py"}
 SDIST_ROOT = {"Cargo.toml", "Cargo.lock", "pyproject.toml", "PKG-INFO", "LICENSE", "NOTICE.md", "README.md"}
 SDIST_DOCS = {"BUILDING.md", "RELEASING.md", "reference-version.json",
-              "API.md", "COMPATIBILITY.md", "FEATURE_COVERAGE.md", "EXPERIMENTAL.md"}
+              "API.md", "COMPATIBILITY.md", "FEATURE_COVERAGE.md", "EXPERIMENTAL.md", "SPECIES_ADAPTATION.md"}
 CRATES = {"anarci-core", "anarci-hmm", "anarci-py", "anarci-cli", "anarci-learned", "hmmer-sys"}
 WHEEL_PYTHON = {
     "anarci": {"__init__.py", "anarci.py", "schemes.py", "germlines.py"},
-    "anarci_rs": {"__init__.py", "__init__.pyi", "py.typed", "_api.py", "compat.py", "io.py", "cli.py", "experimental.py", "schemes.py", "germlines.py"},
+    "anarci_rs": {"__init__.py", "__init__.pyi", "py.typed", "_api.py", "compat.py", "io.py", "cli.py", "experimental.py", "schemes.py", "germlines.py", "species_reference.py", "species_adaptation.py", "species_cli.py"},
 }
 
 
@@ -105,6 +105,8 @@ def inspect_archive(path):
                     entry_points.read_string(archive.read(name).decode())
             if entry_points.get("console_scripts", "anarci-rs", fallback="") != "anarci_rs.cli:main":
                 raise ValueError("missing CLI entry point")
+            if entry_points.get("console_scripts", "anarci-species", fallback="") != "anarci_rs.species_cli:main":
+                raise ValueError("missing species CLI entry point")
             present = {PurePosixPath(n).name for n in names}
             missing = required_licenses - present
             if missing:

@@ -119,3 +119,11 @@ ANARCI-compatible state-vector, germline and scheme helpers are described in
 [COMPATIBILITY.md](COMPATIBILITY.md). Experimental codec, augmentation, dataset
 and optional model functions are described in [EXPERIMENTAL.md](EXPERIMENTAL.md).
 HMMER pipeline failures raise an error rather than returning an empty result.
+
+`anarci_rs.species_reference` fits, validates and scores supplied IMGT-numbered
+repertoire cohorts. `anarci_rs.species_adaptation` exposes `profile_sequence`,
+`profile_numbered`, `propose_sequence` and `propose_numbered`. These experimental
+stdlib Python tools use the native engine for raw-sequence numbering; their
+independent-position baseline and bounded mutation search do not predict binding
+or immune tolerance. References and domain format are explicit inputs. See
+[SPECIES_ADAPTATION.md](SPECIES_ADAPTATION.md) for contracts and real OAS preparation.
