@@ -235,6 +235,8 @@ class SemanticTests(unittest.TestCase):
         self.assertEqual("component unavailable", result["reason"])
         self.assertEqual(["/bin/rust-analyzer", "--version"], run.call_args.args[0])
         self.assertEqual("true", run.call_args.kwargs["env"]["CARGO_NET_OFFLINE"])
+        self.assertEqual("0", run.call_args.kwargs["env"]["RUSTUP_AUTO_INSTALL"])
+        self.assertEqual("1", run.call_args.kwargs["env"]["RUSTUP_NO_UPDATE_CHECK"])
         self.assertEqual(5, run.call_args.kwargs["timeout"])
 
     def test_installed_analyzer_delegates_to_real_semantic_adapter(self):

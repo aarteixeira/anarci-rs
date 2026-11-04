@@ -340,7 +340,7 @@ def semantic_status(executable=None) -> dict:
     if executable:
         try:
             probe = subprocess.run([executable, "--version"], capture_output=True, text=True,
-                                   timeout=5, env={**os.environ, "CARGO_NET_OFFLINE": "true"})
+                                   timeout=5, env={**os.environ, "CARGO_NET_OFFLINE": "true", "RUSTUP_AUTO_INSTALL": "0", "RUSTUP_NO_UPDATE_CHECK": "1"})
             detail = (probe.stdout + probe.stderr).strip()[:1200]
             if probe.returncode == 0:
                 return {"schema_version": SCHEMA, "mode": "semantic", "status": "available",
