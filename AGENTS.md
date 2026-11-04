@@ -11,6 +11,8 @@ Make the smallest change that satisfies the task. Read the affected sources and 
 ```sh
 python3.11 scripts/agent_tools.py doctor
 python3.11 scripts/agent_tools.py context anarci-core
+python3.11 scripts/agent_tools.py symbols definition HmmEngine
+python3.11 scripts/agent_tools.py eval list
 python3.11 scripts/agent_tools.py impact crates/anarci-core/src/orchestrate.rs
 python3.11 scripts/agent_tools.py impact --git
 python3.11 scripts/agent_tools.py generate
@@ -18,6 +20,8 @@ python3.11 scripts/agent_tools.py check
 ```
 
 `generate` refreshes the two deterministic generated documents; edit their inputs, not their output. `check` detects drift. `impact [paths...]` or `impact --git` suggests tests only: it never runs them. Its conservative crate reverse dependencies are not a full call graph. Inspect suggestions before choosing validation.
+
+Use [Rust navigation](docs/agents/RUST_NAVIGATION.md) for lexical candidates or opt-in semantic queries, [contract tests](docs/agents/CONTRACT_TESTS.md) for bounded synthetic validation, and [agent evaluations](docs/agents/EVALUATIONS.md) to measure repair tasks. The [CI policy](docs/agents/CI.md) defines required checks and protected-main settings. Do not bypass a failing gate or weaken an expected result to merge.
 
 ## Invariants
 

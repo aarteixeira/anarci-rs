@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "tasks": [
+    {
+      "id": "impact-consumers",
+      "tier": "offline",
+      "brief": "Repair change-impact routing: changing a dependency must include its transitive consumers and their validation recipes. Preserve direct file ownership, unknown-path reporting and the never-run-validation behavior.",
+      "allowed_paths": ["scripts/agent_tools.py"],
+      "mutations": [{"path": "scripts/agent_tools.py", "old": "edge[\"to\"] in affected and edge[\"from\"] not in affected", "new": "edge[\"from\"] in affected and edge[\"from\"] not in affected"}],
+      "acceptance": [["{python}", "-m", "unittest", "discover", "-s", "tests/agent_tools", "-p", "test_agent_tools.py", "-v"]],
+      "expected_failure_contains": ["FAIL: test_core_change_reaches_all_consumers"],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "query-length-boundary",
+      "tier": "rust-offline",
+      "brief": "Fix native query-length validation so the documented 100000-residue limit is inclusive, larger inputs fail before scanning, and all existing alphabet/name/error contracts remain intact. Use synthetic inputs only.",
+      "allowed_paths": ["crates/anarci-core/src/orchestrate.rs"],
+      "mutations": [{"path": "crates/anarci-core/src/orchestrate.rs", "old": "if sequence.len() > 100_000 {", "new": "if sequence.len() >= 100_000 {"}],
+      "acceptance": [["cargo", "test", "--offline", "--locked", "-p", "anarci-core", "--test", "native_input_contract"]],
+      "expected_failure_contains": ["---- hmm_alphabet_accepts_ambiguity_but_number_remains_strict stdout ----"],
+      "timeout_seconds": 180
+    },
+    {
+      "id": "archive-member-boundary",
+      "tier": "offline",
+      "brief": "Repair source-archive policy so local run outputs cannot enter source distributions, even when their names resemble approved metadata. Keep legitimate root metadata, required profiles, licenses and source-extraction safety working.",
+      "allowed_paths": ["scripts/validate_release.py"],
+      "mutations": [{"path": "scripts/validate_release.py", "old": "    if parts[0] == \"licenses\":", "new": "    if parts[0] == \"outputs\":\n        return True\n    if parts[0] == \"licenses\":"}],
+      "acceptance": [["{python}", "-m", "unittest", "discover", "-s", "tests/packaging", "-v"]],
+      "expected_failure_contains": ["FAIL: test_analysis_and_generated_artifacts_are_not_allowed"],
+      "timeout_seconds": 60
+    }
+  ]
+}

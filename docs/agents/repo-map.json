@@ -1,16 +1,34 @@
 {
   "edges": [
     {
+      "evidence": ".agents/evals/tasks.json",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:.agents/evals/tasks.json"
+    },
+    {
       "evidence": ".agents/repo.json",
       "from": "agent-infra",
       "kind": "contains",
       "to": "file:.agents/repo.json"
     },
     {
+      "evidence": ".github/main-protection.json",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:.github/main-protection.json"
+    },
+    {
       "evidence": ".github/workflows/agents.yml",
       "from": "agent-infra",
       "kind": "contains",
       "to": "file:.github/workflows/agents.yml"
+    },
+    {
+      "evidence": ".github/workflows/fast-validation.yml",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:.github/workflows/fast-validation.yml"
     },
     {
       "evidence": ".gitignore",
@@ -31,10 +49,34 @@
       "to": "file:docs/DISTRIBUTION.md"
     },
     {
+      "evidence": "docs/agents/CI.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/agents/CI.md"
+    },
+    {
+      "evidence": "docs/agents/CONTRACT_TESTS.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/agents/CONTRACT_TESTS.md"
+    },
+    {
+      "evidence": "docs/agents/EVALUATIONS.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/agents/EVALUATIONS.md"
+    },
+    {
       "evidence": "docs/agents/PLAYBOOK.md",
       "from": "agent-infra",
       "kind": "contains",
       "to": "file:docs/agents/PLAYBOOK.md"
+    },
+    {
+      "evidence": "docs/agents/RUST_NAVIGATION.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/agents/RUST_NAVIGATION.md"
     },
     {
       "evidence": "docs/agents/TASK_TEMPLATE.md",
@@ -43,16 +85,64 @@
       "to": "file:docs/agents/TASK_TEMPLATE.md"
     },
     {
+      "evidence": "scripts/agent_eval.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:scripts/agent_eval.py"
+    },
+    {
       "evidence": "scripts/agent_tools.py",
       "from": "agent-infra",
       "kind": "contains",
       "to": "file:scripts/agent_tools.py"
     },
     {
+      "evidence": "scripts/protect_main.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:scripts/protect_main.py"
+    },
+    {
+      "evidence": "scripts/rust_lsp.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:scripts/rust_lsp.py"
+    },
+    {
+      "evidence": "scripts/rust_symbols.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:scripts/rust_symbols.py"
+    },
+    {
+      "evidence": "tests/agent_tools/test_agent_eval.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:tests/agent_tools/test_agent_eval.py"
+    },
+    {
       "evidence": "tests/agent_tools/test_agent_tools.py",
       "from": "agent-infra",
       "kind": "contains",
       "to": "file:tests/agent_tools/test_agent_tools.py"
+    },
+    {
+      "evidence": "tests/agent_tools/test_protect_main.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:tests/agent_tools/test_protect_main.py"
+    },
+    {
+      "evidence": "tests/agent_tools/test_rust_lsp.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:tests/agent_tools/test_rust_lsp.py"
+    },
+    {
+      "evidence": "tests/agent_tools/test_rust_symbols.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:tests/agent_tools/test_rust_symbols.py"
     },
     {
       "evidence": "crates/anarci-cli/Cargo.toml",
@@ -241,6 +331,12 @@
       "to": "file:crates/anarci-core/tests/native_input_contract.rs"
     },
     {
+      "evidence": "crates/anarci-core/tests/property_contract.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/tests/property_contract.rs"
+    },
+    {
       "evidence": "crates/anarci-hmm/Cargo.toml",
       "from": "anarci-hmm",
       "kind": "contains",
@@ -359,6 +455,12 @@
       "from": "anarci-learned",
       "kind": "contains",
       "to": "file:crates/anarci-learned/tests/model.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/tests/property_contract.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/tests/property_contract.rs"
     },
     {
       "evidence": "crates/anarci-py/Cargo.toml",
@@ -593,6 +695,12 @@
       "from": "python-api",
       "kind": "contains",
       "to": "file:tests/python/test_optional_model.py"
+    },
+    {
+      "evidence": "tests/python/test_properties.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_properties.py"
     },
     {
       "evidence": ".cargo/config.toml",
@@ -1176,6 +1284,14 @@
       "components": [
         "agent-infra"
       ],
+      "id": "file:.agents/evals/tasks.json",
+      "kind": "file",
+      "path": ".agents/evals/tasks.json"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
       "id": "file:.agents/repo.json",
       "kind": "file",
       "path": ".agents/repo.json"
@@ -1192,9 +1308,25 @@
       "components": [
         "agent-infra"
       ],
+      "id": "file:.github/main-protection.json",
+      "kind": "file",
+      "path": ".github/main-protection.json"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
       "id": "file:.github/workflows/agents.yml",
       "kind": "file",
       "path": ".github/workflows/agents.yml"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:.github/workflows/fast-validation.yml",
+      "kind": "file",
+      "path": ".github/workflows/fast-validation.yml"
     },
     {
       "components": [
@@ -1508,6 +1640,14 @@
     },
     {
       "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/tests/property_contract.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/tests/property_contract.rs"
+    },
+    {
+      "components": [
         "anarci-hmm"
       ],
       "id": "file:crates/anarci-hmm/Cargo.toml",
@@ -1668,6 +1808,14 @@
     },
     {
       "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/tests/property_contract.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/tests/property_contract.rs"
+    },
+    {
+      "components": [
         "anarci-py"
       ],
       "id": "file:crates/anarci-py/Cargo.toml",
@@ -1798,9 +1946,41 @@
       "components": [
         "agent-infra"
       ],
+      "id": "file:docs/agents/CI.md",
+      "kind": "file",
+      "path": "docs/agents/CI.md"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:docs/agents/CONTRACT_TESTS.md",
+      "kind": "file",
+      "path": "docs/agents/CONTRACT_TESTS.md"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:docs/agents/EVALUATIONS.md",
+      "kind": "file",
+      "path": "docs/agents/EVALUATIONS.md"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
       "id": "file:docs/agents/PLAYBOOK.md",
       "kind": "file",
       "path": "docs/agents/PLAYBOOK.md"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:docs/agents/RUST_NAVIGATION.md",
+      "kind": "file",
+      "path": "docs/agents/RUST_NAVIGATION.md"
     },
     {
       "components": [
@@ -1926,6 +2106,14 @@
       "components": [
         "agent-infra"
       ],
+      "id": "file:scripts/agent_eval.py",
+      "kind": "file",
+      "path": "scripts/agent_eval.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
       "id": "file:scripts/agent_tools.py",
       "kind": "file",
       "path": "scripts/agent_tools.py"
@@ -2020,6 +2208,30 @@
     },
     {
       "components": [
+        "agent-infra"
+      ],
+      "id": "file:scripts/protect_main.py",
+      "kind": "file",
+      "path": "scripts/protect_main.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:scripts/rust_lsp.py",
+      "kind": "file",
+      "path": "scripts/rust_lsp.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:scripts/rust_symbols.py",
+      "kind": "file",
+      "path": "scripts/rust_symbols.py"
+    },
+    {
+      "components": [
         "scripts"
       ],
       "id": "file:scripts/validate_germline.py",
@@ -2062,9 +2274,41 @@
       "components": [
         "agent-infra"
       ],
+      "id": "file:tests/agent_tools/test_agent_eval.py",
+      "kind": "file",
+      "path": "tests/agent_tools/test_agent_eval.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
       "id": "file:tests/agent_tools/test_agent_tools.py",
       "kind": "file",
       "path": "tests/agent_tools/test_agent_tools.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:tests/agent_tools/test_protect_main.py",
+      "kind": "file",
+      "path": "tests/agent_tools/test_protect_main.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:tests/agent_tools/test_rust_lsp.py",
+      "kind": "file",
+      "path": "tests/agent_tools/test_rust_lsp.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:tests/agent_tools/test_rust_symbols.py",
+      "kind": "file",
+      "path": "tests/agent_tools/test_rust_symbols.py"
     },
     {
       "components": [
@@ -2163,6 +2407,14 @@
       "path": "tests/python/test_optional_model.py"
     },
     {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_properties.py",
+      "kind": "file",
+      "path": "tests/python/test_properties.py"
+    },
+    {
       "description": "Thin -sys FFI bindings to a statically linked HMMER 3.4 + Easel (fetched at build time).",
       "features": {},
       "id": "hmmer-sys",
@@ -2243,7 +2495,7 @@
     "core": {
       "commands": [
         "cargo test --locked -p anarci-core --lib",
-        "cargo test --locked -p anarci-core --test native_input_contract"
+        "cargo test --locked -p anarci-core --test native_input_contract --test property_contract"
       ],
       "requires": "Rust and cached Cargo dependencies; historical fixture integration tests are separate",
       "tier": "targeted"
@@ -2257,9 +2509,9 @@
     },
     "learned": {
       "commands": [
-        "cargo test --locked -p anarci-learned --lib"
+        "cargo test --locked -p anarci-learned --no-default-features --test property_contract"
       ],
-      "requires": "Rust and cached dependencies; currently a library compilation check with no unit tests. Use the installed Python experimental contracts for synthetic behavior checks. Historical fixture integration suites and model features require separate review",
+      "requires": "Rust and cached dependencies; bounded synthetic codec/decoder contracts, without Candle or historical fixtures. Model features and biological fixture suites require separate review",
       "tier": "targeted"
     },
     "learned-fixtures": {

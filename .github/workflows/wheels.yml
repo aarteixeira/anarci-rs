@@ -2,7 +2,8 @@ name: Candidate Python distributions
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
+    branches: [main]
     paths:
       - 'Cargo.toml'
       - 'Cargo.lock'
@@ -10,6 +11,10 @@ on:
       - 'crates/**'
       - 'python/**'
       - 'tests/python/**'
+      - 'tests/packaging/**'
+      - 'scripts/validate_release.py'
+      - 'scripts/benchmark_release.py'
+      - 'scripts/generate_rust_notices.py'
       - 'licenses/**'
       - 'LICENSE'
       - 'NOTICE.md'

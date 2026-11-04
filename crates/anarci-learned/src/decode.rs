@@ -1,13 +1,10 @@
-//! Constrained decoding — the "valid by construction" (C2) guarantee.
+//! Constrained decoding of the per-residue label vocabulary.
 //!
-//! The model emits, per residue, a score over [`NUM_LABELS`] labels. A plain argmax can
-//! assign the *same* match position to two residues (silently dropping one in
-//! [`crate::decode_domain`]) or place an insert before any match. [`viterbi_decode`] instead
-//! finds the best-scoring label path that respects the numbering transition constraints, so
-//! the decoded state vector is **always** valid: within a domain match positions strictly
-//! increase (no duplicates ⇒ no dropped residues), inserts follow their match, and a
-//! position reset (or a non-domain label) starts a new domain. Validity is a theorem here,
-//! not a post-processing repair — the contrast with ANARCII's free autoregressive decode.
+//! Within a domain, match positions increase and insertion owners never decrease.
+//! Tracking the last emitted state, rather than only the last match, prevents the
+//! codec from reordering query residues when it groups insertions by owner.
+//! A position reset or non-domain label starts a new domain. These are structural
+//! label constraints, not evidence of biological numbering accuracy.
 
 use crate::labels::Label;
 
@@ -50,27 +47,26 @@ pub fn index_to_label(i: usize) -> Label {
 /// wins when its emission scores clear the penalty. Tunable; not a hard block.
 const RESET_PENALTY: f32 = -6.0;
 
-/// Hidden state = last match position in the current domain (0 = none / just reset).
-/// Returns `(new_state, transition_score)` if emitting `label` from `last_match` is legal.
-fn step(last_match: u8, label: Label) -> Option<(u8, f32)> {
+/// State 0 is outside a domain; 1..=128 are matches and 129..=256 are inserts.
+/// Keeping insertion ownership in the state prevents transitions that reorder residues.
+fn step(previous: u16, label: Label) -> Option<(u16, f32)> {
+    let was_insert = previous > 128;
+    let position = if was_insert { previous - 128 } else { previous };
     match label {
         Label::Match(q) => {
-            if last_match == 0 || q > last_match {
-                Some((q, 0.0)) // start a domain (any q, for partials) or continue it
-            } else {
-                Some((q, RESET_PENALTY)) // q<=last_match: abutting/new domain, discouraged
-            }
+            let q = u16::from(q);
+            // Match(p) after Ins(p) completes that column; after Match(p) it resets.
+            let reset = previous != 0 && if was_insert { q < position } else { q <= position };
+            Some((q, if reset { RESET_PENALTY } else { 0.0 }))
         }
-        // An insert must follow a match and tag a position beyond it; it leaves the last
-        // match unchanged. Illegal before any match (can't start a domain on an insert).
         Label::Ins(p) => {
-            if last_match > 0 && p > last_match {
-                Some((last_match, 0.0))
+            let p = u16::from(p);
+            if previous != 0 && if was_insert { p >= position } else { p > position } {
+                Some((128 + p, 0.0))
             } else {
                 None
             }
         }
-        // A non-domain label ends the current domain (context resets to 0).
         _ => Some((0, 0.0)),
     }
 }
@@ -80,17 +76,17 @@ const NEG_INF: f32 = f32::NEG_INFINITY;
 /// Best-scoring valid label path (Viterbi) over per-residue `logits` (`L × NUM_LABELS`).
 ///
 /// The result, fed to [`crate::decode_sequence`], always yields valid state vectors. Ties
-/// break deterministically toward the lower label index (device-independent).
+/// break deterministically in state/label iteration order. Rows must contain NUM_LABELS scores.
 pub fn viterbi_decode(logits: &[Vec<f32>]) -> Vec<Label> {
     let l = logits.len();
     if l == 0 {
         return Vec::new();
     }
-    const S: usize = 129; // hidden states 0..=128
+    const S: usize = 257; // outside plus the last emitted match or insertion owner
     let mut dp = vec![NEG_INF; S];
     dp[0] = 0.0; // start: no domain open
     // back[i][s] = (label index emitted to reach state s at step i, previous state)
-    let mut back: Vec<[(u16, u8); S]> = vec![[(0u16, 0u8); S]; l];
+    let mut back: Vec<[(u16, u16); S]> = vec![[(0u16, 0u16); S]; l];
 
     for (i, row) in logits.iter().enumerate() {
         debug_assert_eq!(row.len(), NUM_LABELS);
@@ -107,11 +103,11 @@ pub fn viterbi_decode(logits: &[Vec<f32>]) -> Vec<Label> {
                 // in f32's exact-integer range, so downstream residues keep their signal.
                 const CLAMP: f32 = 1e4;
                 let emit = if emit.is_nan() { -CLAMP } else { emit.clamp(-CLAMP, CLAMP) };
-                if let Some((ns, trans)) = step(m as u8, index_to_label(yi)) {
+                if let Some((ns, trans)) = step(m as u16, index_to_label(yi)) {
                     let score = prev + emit + trans;
                     if score > ndp[ns as usize] {
                         ndp[ns as usize] = score;
-                        back[i][ns as usize] = (yi as u16, m as u8);
+                        back[i][ns as usize] = (yi as u16, m as u16);
                     }
                 }
             }
