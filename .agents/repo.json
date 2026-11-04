@@ -20,6 +20,7 @@
     {"patterns": [".gitignore", "docs/DISTRIBUTION.md", "AGENTS.md", ".agents/**", "docs/agents/**", "scripts/agent_tools.py", "scripts/agent_eval.py", "scripts/rust_*.py", "scripts/protect_main.py", "tests/agent_tools/**", ".github/main-protection.json", ".github/workflows/agents.yml", ".github/workflows/fast-validation.yml"], "components": ["agent-infra"]},
     {"patterns": ["Cargo.toml", "Cargo.lock", ".cargo/**", "pyproject.toml", ".github/workflows/wheels.yml", "NOTICE.md", "LICENSE", "scripts/validate_release.py", "scripts/benchmark_release.py", "scripts/generate_rust_notices.py", "tests/packaging/**"], "components": ["release"]},
     {"patterns": ["tests/python/**"], "components": ["python-api"]},
+    {"patterns": ["scripts/build_oas_reference.py", "scripts/evaluate_species_reference.py", ".agents/species/**", "docs/SPECIES_ADAPTATION.md"], "components": ["python-api", "agent-infra"]},
     {"patterns": ["tests/fixtures/**"], "components": ["anarci-core", "anarci-hmm", "anarci-learned"]}
   ],
   "recipes": {

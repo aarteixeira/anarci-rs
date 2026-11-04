@@ -13,6 +13,12 @@
       "to": "file:.agents/repo.json"
     },
     {
+      "evidence": ".agents/species/oas-sources.json",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:.agents/species/oas-sources.json"
+    },
+    {
       "evidence": ".github/main-protection.json",
       "from": "agent-infra",
       "kind": "contains",
@@ -47,6 +53,12 @@
       "from": "agent-infra",
       "kind": "contains",
       "to": "file:docs/DISTRIBUTION.md"
+    },
+    {
+      "evidence": "docs/SPECIES_ADAPTATION.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/SPECIES_ADAPTATION.md"
     },
     {
       "evidence": "docs/agents/CI.md",
@@ -97,6 +109,18 @@
       "to": "file:scripts/agent_tools.py"
     },
     {
+      "evidence": "scripts/build_oas_reference.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:scripts/build_oas_reference.py"
+    },
+    {
+      "evidence": "scripts/evaluate_species_reference.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:scripts/evaluate_species_reference.py"
+    },
+    {
       "evidence": "scripts/protect_main.py",
       "from": "agent-infra",
       "kind": "contains",
@@ -127,6 +151,12 @@
       "to": "file:tests/agent_tools/test_agent_tools.py"
     },
     {
+      "evidence": "tests/agent_tools/test_oas_reference.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:tests/agent_tools/test_oas_reference.py"
+    },
+    {
       "evidence": "tests/agent_tools/test_protect_main.py",
       "from": "agent-infra",
       "kind": "contains",
@@ -143,6 +173,12 @@
       "from": "agent-infra",
       "kind": "contains",
       "to": "file:tests/agent_tools/test_rust_symbols.py"
+    },
+    {
+      "evidence": "tests/agent_tools/test_species_pipeline.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:tests/agent_tools/test_species_pipeline.py"
     },
     {
       "evidence": "crates/anarci-cli/Cargo.toml",
@@ -559,6 +595,18 @@
       "to": "file:crates/hmmer-sys/wrapper.h"
     },
     {
+      "evidence": ".agents/species/oas-sources.json",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:.agents/species/oas-sources.json"
+    },
+    {
+      "evidence": "docs/SPECIES_ADAPTATION.md",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:docs/SPECIES_ADAPTATION.md"
+    },
+    {
       "evidence": "python/anarci/__init__.py",
       "from": "python-api",
       "kind": "contains",
@@ -631,6 +679,36 @@
       "to": "file:python/anarci_rs/schemes.py"
     },
     {
+      "evidence": "python/anarci_rs/species_adaptation.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/species_adaptation.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_cli.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/species_cli.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_reference.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/species_reference.py"
+    },
+    {
+      "evidence": "scripts/build_oas_reference.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:scripts/build_oas_reference.py"
+    },
+    {
+      "evidence": "scripts/evaluate_species_reference.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:scripts/evaluate_species_reference.py"
+    },
+    {
       "evidence": "tests/python/safe_alignment.json",
       "from": "python-api",
       "kind": "contains",
@@ -701,6 +779,18 @@
       "from": "python-api",
       "kind": "contains",
       "to": "file:tests/python/test_properties.py"
+    },
+    {
+      "evidence": "tests/python/test_species_adaptation.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_species_adaptation.py"
+    },
+    {
+      "evidence": "tests/python/test_species_reference.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_species_reference.py"
     },
     {
       "evidence": ".cargo/config.toml",
@@ -1183,6 +1273,34 @@
       "kind": "imports",
       "line": 2,
       "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_adaptation.py",
+      "from": "file:python/anarci_rs/species_adaptation.py",
+      "kind": "imports",
+      "line": 104,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_adaptation.py",
+      "from": "file:python/anarci_rs/species_adaptation.py",
+      "kind": "imports",
+      "line": 11,
+      "to": "file:python/anarci_rs/species_reference.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_cli.py",
+      "from": "file:python/anarci_rs/species_cli.py",
+      "kind": "imports",
+      "line": 8,
+      "to": "file:python/anarci_rs/species_adaptation.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_cli.py",
+      "from": "file:python/anarci_rs/species_cli.py",
+      "kind": "imports",
+      "line": 7,
+      "to": "file:python/anarci_rs/species_reference.py"
     }
   ],
   "nodes": [
@@ -1295,6 +1413,15 @@
       "id": "file:.agents/repo.json",
       "kind": "file",
       "path": ".agents/repo.json"
+    },
+    {
+      "components": [
+        "agent-infra",
+        "python-api"
+      ],
+      "id": "file:.agents/species/oas-sources.json",
+      "kind": "file",
+      "path": ".agents/species/oas-sources.json"
     },
     {
       "components": [
@@ -1944,6 +2071,15 @@
     },
     {
       "components": [
+        "agent-infra",
+        "python-api"
+      ],
+      "id": "file:docs/SPECIES_ADAPTATION.md",
+      "kind": "file",
+      "path": "docs/SPECIES_ADAPTATION.md"
+    },
+    {
+      "components": [
         "agent-infra"
       ],
       "id": "file:docs/agents/CI.md",
@@ -2104,6 +2240,30 @@
     },
     {
       "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/species_adaptation.py",
+      "kind": "file",
+      "path": "python/anarci_rs/species_adaptation.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/species_cli.py",
+      "kind": "file",
+      "path": "python/anarci_rs/species_cli.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/species_reference.py",
+      "kind": "file",
+      "path": "python/anarci_rs/species_reference.py"
+    },
+    {
+      "components": [
         "agent-infra"
       ],
       "id": "file:scripts/agent_eval.py",
@@ -2144,6 +2304,15 @@
     },
     {
       "components": [
+        "agent-infra",
+        "python-api"
+      ],
+      "id": "file:scripts/build_oas_reference.py",
+      "kind": "file",
+      "path": "scripts/build_oas_reference.py"
+    },
+    {
+      "components": [
         "scripts"
       ],
       "id": "file:scripts/build_pan_hmm.py",
@@ -2165,6 +2334,15 @@
       "id": "file:scripts/edge_cases.py",
       "kind": "file",
       "path": "scripts/edge_cases.py"
+    },
+    {
+      "components": [
+        "agent-infra",
+        "python-api"
+      ],
+      "id": "file:scripts/evaluate_species_reference.py",
+      "kind": "file",
+      "path": "scripts/evaluate_species_reference.py"
     },
     {
       "components": [
@@ -2290,6 +2468,14 @@
       "components": [
         "agent-infra"
       ],
+      "id": "file:tests/agent_tools/test_oas_reference.py",
+      "kind": "file",
+      "path": "tests/agent_tools/test_oas_reference.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
       "id": "file:tests/agent_tools/test_protect_main.py",
       "kind": "file",
       "path": "tests/agent_tools/test_protect_main.py"
@@ -2309,6 +2495,14 @@
       "id": "file:tests/agent_tools/test_rust_symbols.py",
       "kind": "file",
       "path": "tests/agent_tools/test_rust_symbols.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:tests/agent_tools/test_species_pipeline.py",
+      "kind": "file",
+      "path": "tests/agent_tools/test_species_pipeline.py"
     },
     {
       "components": [
@@ -2413,6 +2607,22 @@
       "id": "file:tests/python/test_properties.py",
       "kind": "file",
       "path": "tests/python/test_properties.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_species_adaptation.py",
+      "kind": "file",
+      "path": "tests/python/test_species_adaptation.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_species_reference.py",
+      "kind": "file",
+      "path": "tests/python/test_species_reference.py"
     },
     {
       "description": "Thin -sys FFI bindings to a statically linked HMMER 3.4 + Easel (fetched at build time).",

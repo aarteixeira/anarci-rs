@@ -18,6 +18,7 @@ classifiers = [
 
 [project.scripts]
 anarci-rs = "anarci_rs.cli:main"
+anarci-species = "anarci_rs.species_cli:main"
 
 [project.optional-dependencies]
 legacy-parser = ["biopython>=1.78"]
@@ -44,6 +45,7 @@ include = [
     { path = "docs/API.md", format = "sdist" },
     { path = "docs/COMPATIBILITY.md", format = "sdist" },
     { path = "docs/EXPERIMENTAL.md", format = "sdist" },
+    { path = "docs/SPECIES_ADAPTATION.md", format = "sdist" },
     { path = "docs/FEATURE_COVERAGE.md", format = "sdist" },
     { path = "docs/reference-version.json", format = "sdist" },
     { path = "scripts/validate_release.py", format = "sdist" },
