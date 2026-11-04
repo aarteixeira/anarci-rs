@@ -1,0 +1,2297 @@
+{
+  "edges": [
+    {
+      "evidence": ".agents/repo.json",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:.agents/repo.json"
+    },
+    {
+      "evidence": ".github/workflows/agents.yml",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:.github/workflows/agents.yml"
+    },
+    {
+      "evidence": ".gitignore",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:.gitignore"
+    },
+    {
+      "evidence": "AGENTS.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:AGENTS.md"
+    },
+    {
+      "evidence": "docs/DISTRIBUTION.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/DISTRIBUTION.md"
+    },
+    {
+      "evidence": "docs/agents/PLAYBOOK.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/agents/PLAYBOOK.md"
+    },
+    {
+      "evidence": "docs/agents/TASK_TEMPLATE.md",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:docs/agents/TASK_TEMPLATE.md"
+    },
+    {
+      "evidence": "scripts/agent_tools.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:scripts/agent_tools.py"
+    },
+    {
+      "evidence": "tests/agent_tools/test_agent_tools.py",
+      "from": "agent-infra",
+      "kind": "contains",
+      "to": "file:tests/agent_tools/test_agent_tools.py"
+    },
+    {
+      "evidence": "crates/anarci-cli/Cargo.toml",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/Cargo.toml"
+    },
+    {
+      "evidence": "crates/anarci-cli/README.md",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/README.md"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/cif.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/cif.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/engine.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/engine.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/lib.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/lib.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/main.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/main.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/output.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/output.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/pairing.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/pairing.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/pdb.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/pdb.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/seqio.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/seqio.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/structure.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/structure.rs"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/translate.rs",
+      "from": "anarci-cli",
+      "kind": "contains",
+      "to": "file:crates/anarci-cli/src/translate.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/Cargo.toml",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/Cargo.toml"
+    },
+    {
+      "evidence": "crates/anarci-core/data/germlines.json",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/data/germlines.json"
+    },
+    {
+      "evidence": "crates/anarci-core/src/align.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/align.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/constants.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/constants.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/generated_constants.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/generated_constants.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/germlines.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/germlines.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/lib.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/lib.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/orchestrate.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/orchestrate.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/regions.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/regions.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/schemes/ig.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/schemes/ig.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/schemes/mod.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/schemes/mod.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/simd_sw.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/simd_sw.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/sw.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/sw.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/src/types.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/src/types.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/tests/endtoend.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/tests/endtoend.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/tests/engine_parse.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/tests/engine_parse.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/tests/germline_evalue.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/tests/germline_evalue.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/tests/golden.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/tests/golden.rs"
+    },
+    {
+      "evidence": "crates/anarci-core/tests/native_input_contract.rs",
+      "from": "anarci-core",
+      "kind": "contains",
+      "to": "file:crates/anarci-core/tests/native_input_contract.rs"
+    },
+    {
+      "evidence": "crates/anarci-hmm/Cargo.toml",
+      "from": "anarci-hmm",
+      "kind": "contains",
+      "to": "file:crates/anarci-hmm/Cargo.toml"
+    },
+    {
+      "evidence": "crates/anarci-hmm/src/lib.rs",
+      "from": "anarci-hmm",
+      "kind": "contains",
+      "to": "file:crates/anarci-hmm/src/lib.rs"
+    },
+    {
+      "evidence": "crates/anarci-hmm/tests/bench_stages.rs",
+      "from": "anarci-hmm",
+      "kind": "contains",
+      "to": "file:crates/anarci-hmm/tests/bench_stages.rs"
+    },
+    {
+      "evidence": "crates/anarci-hmm/tests/parity.rs",
+      "from": "anarci-hmm",
+      "kind": "contains",
+      "to": "file:crates/anarci-hmm/tests/parity.rs"
+    },
+    {
+      "evidence": "crates/anarci-hmm/tests/smoke.rs",
+      "from": "anarci-hmm",
+      "kind": "contains",
+      "to": "file:crates/anarci-hmm/tests/smoke.rs"
+    },
+    {
+      "evidence": "crates/anarci-hmm/tests/stress.rs",
+      "from": "anarci-hmm",
+      "kind": "contains",
+      "to": "file:crates/anarci-hmm/tests/stress.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/Cargo.toml",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/Cargo.toml"
+    },
+    {
+      "evidence": "crates/anarci-learned/examples/gen_dataset.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/examples/gen_dataset.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/examples/train.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/examples/train.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/src/augment.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/src/augment.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/src/data.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/src/data.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/src/decode.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/src/decode.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/src/labels.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/src/labels.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/src/lib.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/src/lib.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/src/model.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/src/model.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/tests/augment.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/tests/augment.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/tests/codec.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/tests/codec.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/tests/data.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/tests/data.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/tests/decode.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/tests/decode.rs"
+    },
+    {
+      "evidence": "crates/anarci-learned/tests/model.rs",
+      "from": "anarci-learned",
+      "kind": "contains",
+      "to": "file:crates/anarci-learned/tests/model.rs"
+    },
+    {
+      "evidence": "crates/anarci-py/Cargo.toml",
+      "from": "anarci-py",
+      "kind": "contains",
+      "to": "file:crates/anarci-py/Cargo.toml"
+    },
+    {
+      "evidence": "crates/anarci-py/src/experimental.rs",
+      "from": "anarci-py",
+      "kind": "contains",
+      "to": "file:crates/anarci-py/src/experimental.rs"
+    },
+    {
+      "evidence": "crates/anarci-py/src/features.rs",
+      "from": "anarci-py",
+      "kind": "contains",
+      "to": "file:crates/anarci-py/src/features.rs"
+    },
+    {
+      "evidence": "crates/anarci-py/src/lib.rs",
+      "from": "anarci-py",
+      "kind": "contains",
+      "to": "file:crates/anarci-py/src/lib.rs"
+    },
+    {
+      "evidence": "crates/anarci-py/src/model.rs",
+      "from": "anarci-py",
+      "kind": "contains",
+      "to": "file:crates/anarci-py/src/model.rs"
+    },
+    {
+      "evidence": "docs/API.md",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/API.md"
+    },
+    {
+      "evidence": "docs/BUILDING.md",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/BUILDING.md"
+    },
+    {
+      "evidence": "docs/COMPATIBILITY.md",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/COMPATIBILITY.md"
+    },
+    {
+      "evidence": "docs/EXPERIMENTAL.md",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/EXPERIMENTAL.md"
+    },
+    {
+      "evidence": "docs/FEATURE_COVERAGE.md",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/FEATURE_COVERAGE.md"
+    },
+    {
+      "evidence": "docs/RELEASING.md",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/RELEASING.md"
+    },
+    {
+      "evidence": "docs/reference-version.json",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/reference-version.json"
+    },
+    {
+      "evidence": "crates/hmmer-sys/Cargo.toml",
+      "from": "hmmer-sys",
+      "kind": "contains",
+      "to": "file:crates/hmmer-sys/Cargo.toml"
+    },
+    {
+      "evidence": "crates/hmmer-sys/build.rs",
+      "from": "hmmer-sys",
+      "kind": "contains",
+      "to": "file:crates/hmmer-sys/build.rs"
+    },
+    {
+      "evidence": "crates/hmmer-sys/src/lib.rs",
+      "from": "hmmer-sys",
+      "kind": "contains",
+      "to": "file:crates/hmmer-sys/src/lib.rs"
+    },
+    {
+      "evidence": "crates/hmmer-sys/wrapper.h",
+      "from": "hmmer-sys",
+      "kind": "contains",
+      "to": "file:crates/hmmer-sys/wrapper.h"
+    },
+    {
+      "evidence": "python/anarci/__init__.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci/__init__.py"
+    },
+    {
+      "evidence": "python/anarci/anarci.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci/anarci.py"
+    },
+    {
+      "evidence": "python/anarci/germlines.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci/germlines.py"
+    },
+    {
+      "evidence": "python/anarci/schemes.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci/schemes.py"
+    },
+    {
+      "evidence": "python/anarci_rs/__init__.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/_api.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/_api.py"
+    },
+    {
+      "evidence": "python/anarci_rs/cli.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/cli.py"
+    },
+    {
+      "evidence": "python/anarci_rs/compat.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/compat.py"
+    },
+    {
+      "evidence": "python/anarci_rs/experimental.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/experimental.py"
+    },
+    {
+      "evidence": "python/anarci_rs/germlines.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/germlines.py"
+    },
+    {
+      "evidence": "python/anarci_rs/io.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/io.py"
+    },
+    {
+      "evidence": "python/anarci_rs/schemes.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/schemes.py"
+    },
+    {
+      "evidence": "tests/python/safe_alignment.json",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/safe_alignment.json"
+    },
+    {
+      "evidence": "tests/python/safe_consensus.json",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/safe_consensus.json"
+    },
+    {
+      "evidence": "tests/python/safe_expected.json",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/safe_expected.json"
+    },
+    {
+      "evidence": "tests/python/safe_helpers.json",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/safe_helpers.json"
+    },
+    {
+      "evidence": "tests/python/safe_reference.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/safe_reference.py"
+    },
+    {
+      "evidence": "tests/python/test_api.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_api.py"
+    },
+    {
+      "evidence": "tests/python/test_compat.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_compat.py"
+    },
+    {
+      "evidence": "tests/python/test_console_entry.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_console_entry.py"
+    },
+    {
+      "evidence": "tests/python/test_experimental.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_experimental.py"
+    },
+    {
+      "evidence": "tests/python/test_integration.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_integration.py"
+    },
+    {
+      "evidence": "tests/python/test_optional_model.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_optional_model.py"
+    },
+    {
+      "evidence": ".cargo/config.toml",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:.cargo/config.toml"
+    },
+    {
+      "evidence": ".github/workflows/wheels.yml",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:.github/workflows/wheels.yml"
+    },
+    {
+      "evidence": "Cargo.lock",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:Cargo.lock"
+    },
+    {
+      "evidence": "Cargo.toml",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:Cargo.toml"
+    },
+    {
+      "evidence": "LICENSE",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:LICENSE"
+    },
+    {
+      "evidence": "NOTICE.md",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:NOTICE.md"
+    },
+    {
+      "evidence": "pyproject.toml",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:pyproject.toml"
+    },
+    {
+      "evidence": "scripts/benchmark_release.py",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:scripts/benchmark_release.py"
+    },
+    {
+      "evidence": "scripts/generate_rust_notices.py",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:scripts/generate_rust_notices.py"
+    },
+    {
+      "evidence": "scripts/validate_release.py",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:scripts/validate_release.py"
+    },
+    {
+      "evidence": "tests/packaging/test_source_extraction.py",
+      "from": "release",
+      "kind": "contains",
+      "to": "file:tests/packaging/test_source_extraction.py"
+    },
+    {
+      "evidence": "scripts/benchmark.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/benchmark.py"
+    },
+    {
+      "evidence": "scripts/benchmark_cli.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/benchmark_cli.py"
+    },
+    {
+      "evidence": "scripts/build_pan_hmm.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/build_pan_hmm.py"
+    },
+    {
+      "evidence": "scripts/capture_hsps.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/capture_hsps.py"
+    },
+    {
+      "evidence": "scripts/edge_cases.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/edge_cases.py"
+    },
+    {
+      "evidence": "scripts/export_germlines.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/export_germlines.py"
+    },
+    {
+      "evidence": "scripts/gen_constants.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/gen_constants.py"
+    },
+    {
+      "evidence": "scripts/gen_endtoend.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/gen_endtoend.py"
+    },
+    {
+      "evidence": "scripts/gen_golden.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/gen_golden.py"
+    },
+    {
+      "evidence": "scripts/validate_germline.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/validate_germline.py"
+    },
+    {
+      "evidence": "scripts/validate_pairing.sh",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/validate_pairing.sh"
+    },
+    {
+      "evidence": "scripts/validate_pan.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/validate_pan.py"
+    },
+    {
+      "evidence": "scripts/verify_learned_codec.py",
+      "from": "scripts",
+      "kind": "contains",
+      "to": "file:scripts/verify_learned_codec.py"
+    },
+    {
+      "evidence": "crates/anarci-cli/Cargo.toml",
+      "from": "anarci-cli",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-core"
+    },
+    {
+      "evidence": "crates/anarci-cli/Cargo.toml",
+      "from": "anarci-cli",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-hmm"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/engine.rs",
+      "from": "anarci-cli",
+      "kind": "depends_on",
+      "scope": "reviewed-data",
+      "to": "reference-data"
+    },
+    {
+      "evidence": "crates/anarci-hmm/Cargo.toml",
+      "from": "anarci-hmm",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-core"
+    },
+    {
+      "evidence": "crates/anarci-hmm/Cargo.toml",
+      "from": "anarci-hmm",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "hmmer-sys"
+    },
+    {
+      "evidence": "crates/anarci-hmm/Cargo.toml",
+      "from": "anarci-hmm",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dev-dependencies",
+      "to": "hmmer-sys"
+    },
+    {
+      "evidence": "crates/anarci-hmm/src/lib.rs",
+      "from": "anarci-hmm",
+      "kind": "depends_on",
+      "scope": "reviewed-data",
+      "to": "reference-data"
+    },
+    {
+      "evidence": "crates/anarci-learned/Cargo.toml",
+      "from": "anarci-learned",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-core"
+    },
+    {
+      "evidence": "crates/anarci-py/Cargo.toml",
+      "from": "anarci-py",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-cli"
+    },
+    {
+      "evidence": "crates/anarci-py/Cargo.toml",
+      "from": "anarci-py",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-core"
+    },
+    {
+      "evidence": "crates/anarci-py/Cargo.toml",
+      "from": "anarci-py",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-hmm"
+    },
+    {
+      "evidence": "crates/anarci-py/Cargo.toml",
+      "from": "anarci-py",
+      "kind": "depends_on",
+      "optional": false,
+      "scope": "dependencies",
+      "to": "anarci-learned"
+    },
+    {
+      "evidence": "crates/anarci-py/src/lib.rs",
+      "from": "anarci-py",
+      "kind": "depends_on",
+      "scope": "reviewed-data",
+      "to": "reference-data"
+    },
+    {
+      "evidence": ".agents/repo.json",
+      "from": "python-api",
+      "kind": "depends_on",
+      "to": "anarci-py"
+    },
+    {
+      "evidence": "crates/anarci-cli/src/engine.rs",
+      "from": "anarci-cli",
+      "kind": "flow",
+      "label": "Engine selection and scan",
+      "to": "anarci-hmm"
+    },
+    {
+      "evidence": "crates/anarci-hmm/src/lib.rs",
+      "from": "anarci-hmm",
+      "kind": "flow",
+      "label": "Scan results feed numbering orchestration",
+      "to": "anarci-core"
+    },
+    {
+      "evidence": "crates/anarci-hmm/src/lib.rs",
+      "from": "anarci-hmm",
+      "kind": "flow",
+      "label": "Native HMMER FFI",
+      "to": "hmmer-sys"
+    },
+    {
+      "evidence": "crates/anarci-learned/src/labels.rs",
+      "from": "anarci-learned",
+      "kind": "flow",
+      "label": "Experimental codec uses core state types",
+      "to": "anarci-core"
+    },
+    {
+      "evidence": "crates/anarci-py/src/features.rs",
+      "from": "anarci-py",
+      "kind": "flow",
+      "label": "Shared sequence and structure tools",
+      "to": "anarci-cli"
+    },
+    {
+      "evidence": "python/anarci_rs/_api.py",
+      "from": "python-api",
+      "kind": "flow",
+      "label": "Python arguments and result conversion",
+      "to": "anarci-py"
+    },
+    {
+      "evidence": "python/anarci/__init__.py",
+      "from": "file:python/anarci/__init__.py",
+      "kind": "imports",
+      "line": 3,
+      "to": "file:python/anarci/anarci.py"
+    },
+    {
+      "evidence": "python/anarci/__init__.py",
+      "from": "file:python/anarci/__init__.py",
+      "kind": "imports",
+      "line": 4,
+      "to": "file:python/anarci/germlines.py"
+    },
+    {
+      "evidence": "python/anarci/__init__.py",
+      "from": "file:python/anarci/__init__.py",
+      "kind": "imports",
+      "line": 4,
+      "to": "file:python/anarci/schemes.py"
+    },
+    {
+      "evidence": "python/anarci/__init__.py",
+      "from": "file:python/anarci/__init__.py",
+      "kind": "imports",
+      "line": 2,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci/anarci.py",
+      "from": "file:python/anarci/anarci.py",
+      "kind": "imports",
+      "line": 4,
+      "to": "file:python/anarci/germlines.py"
+    },
+    {
+      "evidence": "python/anarci/anarci.py",
+      "from": "file:python/anarci/anarci.py",
+      "kind": "imports",
+      "line": 10,
+      "to": "file:python/anarci_rs/compat.py"
+    },
+    {
+      "evidence": "python/anarci/anarci.py",
+      "from": "file:python/anarci/anarci.py",
+      "kind": "imports",
+      "line": 3,
+      "to": "file:python/anarci_rs/compat.py"
+    },
+    {
+      "evidence": "python/anarci/germlines.py",
+      "from": "file:python/anarci/germlines.py",
+      "kind": "imports",
+      "line": 2,
+      "to": "file:python/anarci_rs/germlines.py"
+    },
+    {
+      "evidence": "python/anarci/schemes.py",
+      "from": "file:python/anarci/schemes.py",
+      "kind": "imports",
+      "line": 2,
+      "to": "file:python/anarci_rs/schemes.py"
+    },
+    {
+      "evidence": "python/anarci/schemes.py",
+      "from": "file:python/anarci/schemes.py",
+      "kind": "imports",
+      "line": 3,
+      "to": "file:python/anarci_rs/schemes.py"
+    },
+    {
+      "evidence": "python/anarci/schemes.py",
+      "from": "file:python/anarci/schemes.py",
+      "kind": "imports",
+      "line": 4,
+      "to": "file:python/anarci_rs/schemes.py"
+    },
+    {
+      "evidence": "python/anarci_rs/__init__.py",
+      "from": "file:python/anarci_rs/__init__.py",
+      "kind": "imports",
+      "line": 8,
+      "to": "file:python/anarci_rs/_api.py"
+    },
+    {
+      "evidence": "python/anarci_rs/__init__.py",
+      "from": "file:python/anarci_rs/__init__.py",
+      "kind": "imports",
+      "line": 58,
+      "to": "file:python/anarci_rs/compat.py"
+    },
+    {
+      "evidence": "python/anarci_rs/__init__.py",
+      "from": "file:python/anarci_rs/__init__.py",
+      "kind": "imports",
+      "line": 59,
+      "to": "file:python/anarci_rs/compat.py"
+    },
+    {
+      "evidence": "python/anarci_rs/__init__.py",
+      "from": "file:python/anarci_rs/__init__.py",
+      "kind": "imports",
+      "line": 64,
+      "to": "file:python/anarci_rs/germlines.py"
+    },
+    {
+      "evidence": "python/anarci_rs/__init__.py",
+      "from": "file:python/anarci_rs/__init__.py",
+      "kind": "imports",
+      "line": 9,
+      "to": "file:python/anarci_rs/io.py"
+    },
+    {
+      "evidence": "python/anarci_rs/_api.py",
+      "from": "file:python/anarci_rs/_api.py",
+      "kind": "imports",
+      "line": 4,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/_api.py",
+      "from": "file:python/anarci_rs/_api.py",
+      "kind": "imports",
+      "line": 5,
+      "to": "file:python/anarci_rs/io.py"
+    },
+    {
+      "evidence": "python/anarci_rs/cli.py",
+      "from": "file:python/anarci_rs/cli.py",
+      "kind": "imports",
+      "line": 7,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/compat.py",
+      "from": "file:python/anarci_rs/compat.py",
+      "kind": "imports",
+      "line": 3,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/compat.py",
+      "from": "file:python/anarci_rs/compat.py",
+      "kind": "imports",
+      "line": 2,
+      "to": "file:python/anarci_rs/_api.py"
+    },
+    {
+      "evidence": "python/anarci_rs/compat.py",
+      "from": "file:python/anarci_rs/compat.py",
+      "kind": "imports",
+      "line": 4,
+      "to": "file:python/anarci_rs/io.py"
+    },
+    {
+      "evidence": "python/anarci_rs/compat.py",
+      "from": "file:python/anarci_rs/compat.py",
+      "kind": "imports",
+      "line": 5,
+      "to": "file:python/anarci_rs/schemes.py"
+    },
+    {
+      "evidence": "python/anarci_rs/compat.py",
+      "from": "file:python/anarci_rs/compat.py",
+      "kind": "imports",
+      "line": 6,
+      "to": "file:python/anarci_rs/schemes.py"
+    },
+    {
+      "evidence": "python/anarci_rs/experimental.py",
+      "from": "file:python/anarci_rs/experimental.py",
+      "kind": "imports",
+      "line": 13,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/germlines.py",
+      "from": "file:python/anarci_rs/germlines.py",
+      "kind": "imports",
+      "line": 3,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/schemes.py",
+      "from": "file:python/anarci_rs/schemes.py",
+      "kind": "imports",
+      "line": 2,
+      "to": "file:python/anarci_rs/__init__.py"
+    }
+  ],
+  "nodes": [
+    {
+      "depends_on": [],
+      "description": "Agent routing policy, repository graph generator and instructions",
+      "id": "agent-infra",
+      "kind": "component",
+      "path": ".agents",
+      "recipes": [
+        "agent"
+      ]
+    },
+    {
+      "description": "anarci-cli",
+      "features": {},
+      "id": "anarci-cli",
+      "kind": "component",
+      "manifest": "crates/anarci-cli/Cargo.toml",
+      "path": "crates/anarci-cli",
+      "recipes": [
+        "cli"
+      ]
+    },
+    {
+      "description": "Pure-Rust core of anarci-rs: state vectors, numbering schemes, germline assignment",
+      "features": {},
+      "id": "anarci-core",
+      "kind": "component",
+      "manifest": "crates/anarci-core/Cargo.toml",
+      "path": "crates/anarci-core",
+      "recipes": [
+        "core"
+      ]
+    },
+    {
+      "description": "Safe in-process HMMER 3.4 scan engine producing ANARCI-compatible HSPs.",
+      "features": {},
+      "id": "anarci-hmm",
+      "kind": "component",
+      "manifest": "crates/anarci-hmm/Cargo.toml",
+      "path": "crates/anarci-hmm",
+      "recipes": [
+        "hmm"
+      ]
+    },
+    {
+      "description": "anarci-learned",
+      "features": {
+        "cuda": [
+          "model",
+          "candle-core/cuda",
+          "candle-nn/cuda"
+        ],
+        "metal": [
+          "model",
+          "candle-core/metal",
+          "candle-nn/metal"
+        ],
+        "model": [
+          "dep:candle-core",
+          "dep:candle-nn"
+        ]
+      },
+      "id": "anarci-learned",
+      "kind": "component",
+      "manifest": "crates/anarci-learned/Cargo.toml",
+      "path": "crates/anarci-learned",
+      "recipes": [
+        "learned"
+      ]
+    },
+    {
+      "description": "PyO3 module `anarci_rs`: drop-in Python API for ANARCI, all-Rust internals.",
+      "features": {
+        "learned-model": [
+          "anarci-learned/model",
+          "dep:candle-core",
+          "dep:candle-nn"
+        ]
+      },
+      "id": "anarci-py",
+      "kind": "component",
+      "manifest": "crates/anarci-py/Cargo.toml",
+      "path": "crates/anarci-py",
+      "recipes": [
+        "python"
+      ]
+    },
+    {
+      "depends_on": [],
+      "description": "Public API, build and release contracts",
+      "id": "documentation",
+      "kind": "component",
+      "path": "docs",
+      "recipes": []
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:.agents/repo.json",
+      "kind": "file",
+      "path": ".agents/repo.json"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:.cargo/config.toml",
+      "kind": "file",
+      "path": ".cargo/config.toml"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:.github/workflows/agents.yml",
+      "kind": "file",
+      "path": ".github/workflows/agents.yml"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:.github/workflows/wheels.yml",
+      "kind": "file",
+      "path": ".github/workflows/wheels.yml"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:.gitignore",
+      "kind": "file",
+      "path": ".gitignore"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:AGENTS.md",
+      "kind": "file",
+      "path": "AGENTS.md"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:Cargo.lock",
+      "kind": "file",
+      "path": "Cargo.lock"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:Cargo.toml",
+      "kind": "file",
+      "path": "Cargo.toml"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:LICENSE",
+      "kind": "file",
+      "path": "LICENSE"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:NOTICE.md",
+      "kind": "file",
+      "path": "NOTICE.md"
+    },
+    {
+      "components": [],
+      "id": "file:README.md",
+      "kind": "file",
+      "path": "README.md"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/Cargo.toml",
+      "kind": "file",
+      "path": "crates/anarci-cli/Cargo.toml"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/README.md",
+      "kind": "file",
+      "path": "crates/anarci-cli/README.md"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/cif.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/cif.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/engine.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/engine.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/lib.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/lib.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/main.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/main.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/output.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/output.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/pairing.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/pairing.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/pdb.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/pdb.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/seqio.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/seqio.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/structure.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/structure.rs"
+    },
+    {
+      "components": [
+        "anarci-cli"
+      ],
+      "id": "file:crates/anarci-cli/src/translate.rs",
+      "kind": "file",
+      "path": "crates/anarci-cli/src/translate.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/Cargo.toml",
+      "kind": "file",
+      "path": "crates/anarci-core/Cargo.toml"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/data/germlines.json",
+      "kind": "file",
+      "path": "crates/anarci-core/data/germlines.json"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/align.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/align.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/constants.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/constants.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/generated_constants.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/generated_constants.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/germlines.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/germlines.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/lib.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/lib.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/orchestrate.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/orchestrate.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/regions.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/regions.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/schemes/ig.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/schemes/ig.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/schemes/mod.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/schemes/mod.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/simd_sw.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/simd_sw.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/sw.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/sw.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/src/types.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/src/types.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/tests/endtoend.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/tests/endtoend.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/tests/engine_parse.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/tests/engine_parse.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/tests/germline_evalue.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/tests/germline_evalue.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/tests/golden.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/tests/golden.rs"
+    },
+    {
+      "components": [
+        "anarci-core"
+      ],
+      "id": "file:crates/anarci-core/tests/native_input_contract.rs",
+      "kind": "file",
+      "path": "crates/anarci-core/tests/native_input_contract.rs"
+    },
+    {
+      "components": [
+        "anarci-hmm"
+      ],
+      "id": "file:crates/anarci-hmm/Cargo.toml",
+      "kind": "file",
+      "path": "crates/anarci-hmm/Cargo.toml"
+    },
+    {
+      "components": [
+        "anarci-hmm"
+      ],
+      "id": "file:crates/anarci-hmm/src/lib.rs",
+      "kind": "file",
+      "path": "crates/anarci-hmm/src/lib.rs"
+    },
+    {
+      "components": [
+        "anarci-hmm"
+      ],
+      "id": "file:crates/anarci-hmm/tests/bench_stages.rs",
+      "kind": "file",
+      "path": "crates/anarci-hmm/tests/bench_stages.rs"
+    },
+    {
+      "components": [
+        "anarci-hmm"
+      ],
+      "id": "file:crates/anarci-hmm/tests/parity.rs",
+      "kind": "file",
+      "path": "crates/anarci-hmm/tests/parity.rs"
+    },
+    {
+      "components": [
+        "anarci-hmm"
+      ],
+      "id": "file:crates/anarci-hmm/tests/smoke.rs",
+      "kind": "file",
+      "path": "crates/anarci-hmm/tests/smoke.rs"
+    },
+    {
+      "components": [
+        "anarci-hmm"
+      ],
+      "id": "file:crates/anarci-hmm/tests/stress.rs",
+      "kind": "file",
+      "path": "crates/anarci-hmm/tests/stress.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/Cargo.toml",
+      "kind": "file",
+      "path": "crates/anarci-learned/Cargo.toml"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/examples/gen_dataset.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/examples/gen_dataset.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/examples/train.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/examples/train.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/src/augment.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/src/augment.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/src/data.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/src/data.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/src/decode.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/src/decode.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/src/labels.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/src/labels.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/src/lib.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/src/lib.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/src/model.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/src/model.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/tests/augment.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/tests/augment.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/tests/codec.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/tests/codec.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/tests/data.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/tests/data.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/tests/decode.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/tests/decode.rs"
+    },
+    {
+      "components": [
+        "anarci-learned"
+      ],
+      "id": "file:crates/anarci-learned/tests/model.rs",
+      "kind": "file",
+      "path": "crates/anarci-learned/tests/model.rs"
+    },
+    {
+      "components": [
+        "anarci-py"
+      ],
+      "id": "file:crates/anarci-py/Cargo.toml",
+      "kind": "file",
+      "path": "crates/anarci-py/Cargo.toml"
+    },
+    {
+      "components": [
+        "anarci-py"
+      ],
+      "id": "file:crates/anarci-py/src/experimental.rs",
+      "kind": "file",
+      "path": "crates/anarci-py/src/experimental.rs"
+    },
+    {
+      "components": [
+        "anarci-py"
+      ],
+      "id": "file:crates/anarci-py/src/features.rs",
+      "kind": "file",
+      "path": "crates/anarci-py/src/features.rs"
+    },
+    {
+      "components": [
+        "anarci-py"
+      ],
+      "id": "file:crates/anarci-py/src/lib.rs",
+      "kind": "file",
+      "path": "crates/anarci-py/src/lib.rs"
+    },
+    {
+      "components": [
+        "anarci-py"
+      ],
+      "id": "file:crates/anarci-py/src/model.rs",
+      "kind": "file",
+      "path": "crates/anarci-py/src/model.rs"
+    },
+    {
+      "components": [
+        "hmmer-sys"
+      ],
+      "id": "file:crates/hmmer-sys/Cargo.toml",
+      "kind": "file",
+      "path": "crates/hmmer-sys/Cargo.toml"
+    },
+    {
+      "components": [
+        "hmmer-sys"
+      ],
+      "id": "file:crates/hmmer-sys/build.rs",
+      "kind": "file",
+      "path": "crates/hmmer-sys/build.rs"
+    },
+    {
+      "components": [
+        "hmmer-sys"
+      ],
+      "id": "file:crates/hmmer-sys/src/lib.rs",
+      "kind": "file",
+      "path": "crates/hmmer-sys/src/lib.rs"
+    },
+    {
+      "components": [
+        "hmmer-sys"
+      ],
+      "id": "file:crates/hmmer-sys/wrapper.h",
+      "kind": "file",
+      "path": "crates/hmmer-sys/wrapper.h"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
+      "id": "file:docs/API.md",
+      "kind": "file",
+      "path": "docs/API.md"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
+      "id": "file:docs/BUILDING.md",
+      "kind": "file",
+      "path": "docs/BUILDING.md"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
+      "id": "file:docs/COMPATIBILITY.md",
+      "kind": "file",
+      "path": "docs/COMPATIBILITY.md"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:docs/DISTRIBUTION.md",
+      "kind": "file",
+      "path": "docs/DISTRIBUTION.md"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
+      "id": "file:docs/EXPERIMENTAL.md",
+      "kind": "file",
+      "path": "docs/EXPERIMENTAL.md"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
+      "id": "file:docs/FEATURE_COVERAGE.md",
+      "kind": "file",
+      "path": "docs/FEATURE_COVERAGE.md"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
+      "id": "file:docs/RELEASING.md",
+      "kind": "file",
+      "path": "docs/RELEASING.md"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:docs/agents/PLAYBOOK.md",
+      "kind": "file",
+      "path": "docs/agents/PLAYBOOK.md"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:docs/agents/TASK_TEMPLATE.md",
+      "kind": "file",
+      "path": "docs/agents/TASK_TEMPLATE.md"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
+      "id": "file:docs/reference-version.json",
+      "kind": "file",
+      "path": "docs/reference-version.json"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:pyproject.toml",
+      "kind": "file",
+      "path": "pyproject.toml"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci/__init__.py",
+      "kind": "file",
+      "path": "python/anarci/__init__.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci/anarci.py",
+      "kind": "file",
+      "path": "python/anarci/anarci.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci/germlines.py",
+      "kind": "file",
+      "path": "python/anarci/germlines.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci/schemes.py",
+      "kind": "file",
+      "path": "python/anarci/schemes.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/__init__.py",
+      "kind": "file",
+      "path": "python/anarci_rs/__init__.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/_api.py",
+      "kind": "file",
+      "path": "python/anarci_rs/_api.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/cli.py",
+      "kind": "file",
+      "path": "python/anarci_rs/cli.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/compat.py",
+      "kind": "file",
+      "path": "python/anarci_rs/compat.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/experimental.py",
+      "kind": "file",
+      "path": "python/anarci_rs/experimental.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/germlines.py",
+      "kind": "file",
+      "path": "python/anarci_rs/germlines.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/io.py",
+      "kind": "file",
+      "path": "python/anarci_rs/io.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/schemes.py",
+      "kind": "file",
+      "path": "python/anarci_rs/schemes.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:scripts/agent_tools.py",
+      "kind": "file",
+      "path": "scripts/agent_tools.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/benchmark.py",
+      "kind": "file",
+      "path": "scripts/benchmark.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/benchmark_cli.py",
+      "kind": "file",
+      "path": "scripts/benchmark_cli.py"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:scripts/benchmark_release.py",
+      "kind": "file",
+      "path": "scripts/benchmark_release.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/build_pan_hmm.py",
+      "kind": "file",
+      "path": "scripts/build_pan_hmm.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/capture_hsps.py",
+      "kind": "file",
+      "path": "scripts/capture_hsps.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/edge_cases.py",
+      "kind": "file",
+      "path": "scripts/edge_cases.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/export_germlines.py",
+      "kind": "file",
+      "path": "scripts/export_germlines.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/gen_constants.py",
+      "kind": "file",
+      "path": "scripts/gen_constants.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/gen_endtoend.py",
+      "kind": "file",
+      "path": "scripts/gen_endtoend.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/gen_golden.py",
+      "kind": "file",
+      "path": "scripts/gen_golden.py"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:scripts/generate_rust_notices.py",
+      "kind": "file",
+      "path": "scripts/generate_rust_notices.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/validate_germline.py",
+      "kind": "file",
+      "path": "scripts/validate_germline.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/validate_pairing.sh",
+      "kind": "file",
+      "path": "scripts/validate_pairing.sh"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/validate_pan.py",
+      "kind": "file",
+      "path": "scripts/validate_pan.py"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:scripts/validate_release.py",
+      "kind": "file",
+      "path": "scripts/validate_release.py"
+    },
+    {
+      "components": [
+        "scripts"
+      ],
+      "id": "file:scripts/verify_learned_codec.py",
+      "kind": "file",
+      "path": "scripts/verify_learned_codec.py"
+    },
+    {
+      "components": [
+        "agent-infra"
+      ],
+      "id": "file:tests/agent_tools/test_agent_tools.py",
+      "kind": "file",
+      "path": "tests/agent_tools/test_agent_tools.py"
+    },
+    {
+      "components": [
+        "release"
+      ],
+      "id": "file:tests/packaging/test_source_extraction.py",
+      "kind": "file",
+      "path": "tests/packaging/test_source_extraction.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/safe_alignment.json",
+      "kind": "file",
+      "path": "tests/python/safe_alignment.json"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/safe_consensus.json",
+      "kind": "file",
+      "path": "tests/python/safe_consensus.json"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/safe_expected.json",
+      "kind": "file",
+      "path": "tests/python/safe_expected.json"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/safe_helpers.json",
+      "kind": "file",
+      "path": "tests/python/safe_helpers.json"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/safe_reference.py",
+      "kind": "file",
+      "path": "tests/python/safe_reference.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_api.py",
+      "kind": "file",
+      "path": "tests/python/test_api.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_compat.py",
+      "kind": "file",
+      "path": "tests/python/test_compat.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_console_entry.py",
+      "kind": "file",
+      "path": "tests/python/test_console_entry.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_experimental.py",
+      "kind": "file",
+      "path": "tests/python/test_experimental.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_integration.py",
+      "kind": "file",
+      "path": "tests/python/test_integration.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_optional_model.py",
+      "kind": "file",
+      "path": "tests/python/test_optional_model.py"
+    },
+    {
+      "description": "Thin -sys FFI bindings to a statically linked HMMER 3.4 + Easel (fetched at build time).",
+      "features": {},
+      "id": "hmmer-sys",
+      "kind": "component",
+      "manifest": "crates/hmmer-sys/Cargo.toml",
+      "path": "crates/hmmer-sys",
+      "recipes": [
+        "hmm"
+      ]
+    },
+    {
+      "depends_on": [
+        "anarci-py"
+      ],
+      "description": "Extended Python API and reference-compatible anarci facade",
+      "id": "python-api",
+      "kind": "component",
+      "path": "python",
+      "recipes": [
+        "python"
+      ]
+    },
+    {
+      "depends_on": [],
+      "description": "Bundled profiles and reference inputs; preserve provenance and attribution",
+      "id": "reference-data",
+      "kind": "component",
+      "path": "reference_data",
+      "recipes": [
+        "core",
+        "hmm",
+        "python",
+        "release"
+      ]
+    },
+    {
+      "depends_on": [],
+      "description": "Packaging, distribution qualification and retained notices",
+      "id": "release",
+      "kind": "component",
+      "path": "licenses",
+      "recipes": [
+        "packaging",
+        "release"
+      ]
+    },
+    {
+      "depends_on": [],
+      "description": "Development, validation and data preparation tools",
+      "id": "scripts",
+      "kind": "component",
+      "path": "scripts",
+      "recipes": []
+    }
+  ],
+  "notes": [
+    "Cargo edges include all declared local optional, target, build and dev dependencies, not a resolved feature configuration. Reviewed data dependencies are separately labeled.",
+    "Python import edges are static AST references to local source modules; dynamic imports and the native extension are not resolved.",
+    "Flow edges are reviewed policy annotations, not extracted call graphs. File containment does not imply test coverage.",
+    "Inventory covers Git-visible source/config/docs in explicit roots plus named root entry points, including untracked candidate source. Reference datasets, binary fixtures, ignored untracked files, symlinks and build artifacts are excluded; commit intended new inputs with generated maps."
+  ],
+  "recipes": {
+    "agent": {
+      "commands": [
+        "python3 scripts/agent_tools.py check",
+        "python3 -m unittest discover -s tests/agent_tools -v"
+      ],
+      "requires": "Python 3.11+; no third-party dependencies or network",
+      "tier": "offline"
+    },
+    "cli": {
+      "commands": [
+        "cargo test --locked -p anarci-cli --lib"
+      ],
+      "requires": "Native HMMER build prerequisites",
+      "tier": "native"
+    },
+    "core": {
+      "commands": [
+        "cargo test --locked -p anarci-core --lib",
+        "cargo test --locked -p anarci-core --test native_input_contract"
+      ],
+      "requires": "Rust and cached Cargo dependencies; historical fixture integration tests are separate",
+      "tier": "targeted"
+    },
+    "hmm": {
+      "commands": [
+        "cargo test --locked -p anarci-hmm --lib robustness_tests"
+      ],
+      "requires": "Rust, C compiler, make, libclang, verified HMMER source or network; see docs/BUILDING.md",
+      "tier": "native"
+    },
+    "learned": {
+      "commands": [
+        "cargo test --locked -p anarci-learned --lib"
+      ],
+      "requires": "Rust and cached dependencies; currently a library compilation check with no unit tests. Use the installed Python experimental contracts for synthetic behavior checks. Historical fixture integration suites and model features require separate review",
+      "tier": "targeted"
+    },
+    "learned-fixtures": {
+      "commands": [
+        "cargo test --locked -p anarci-learned --test codec --test decode --test augment --test data"
+      ],
+      "requires": "Opt-in only after reviewing and authorizing historical tests/fixtures/golden.json.gz provenance and use; these tests read that fixture, including tests named augmentation and decoder. Not a release qualification or trained-model accuracy check",
+      "tier": "historical-opt-in"
+    },
+    "packaging": {
+      "commands": [
+        "python -m unittest discover -s tests/packaging -v"
+      ],
+      "requires": "Python; source extraction tests, not wheel qualification",
+      "tier": "offline"
+    },
+    "python": {
+      "commands": [
+        "maturin develop --release --locked",
+        "python -m unittest discover -s tests/python -v"
+      ],
+      "requires": "Isolated Python environment, maturin and native build prerequisites; rebuild extension after Rust edits",
+      "tier": "installed"
+    },
+    "release": {
+      "commands": [
+        "python scripts/validate_release.py --help",
+        "python scripts/generate_rust_notices.py --check"
+      ],
+      "requires": "Follow docs/RELEASING.md for actual artifact qualification; --help does not validate a release; notices check needs dependency sources cached",
+      "tier": "release-review"
+    }
+  },
+  "schema_version": 1
+}

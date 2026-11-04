@@ -31,6 +31,18 @@ def source_archive(path, extra=None):
 
 
 class SourceExtractionTests(unittest.TestCase):
+    def test_analysis_and_generated_artifacts_are_not_allowed(self):
+        from pathlib import PurePosixPath
+        forbidden = (
+            "docs/PYPI_RELEASE_PLAN.md", "docs/RELEASE_EVIDENCE.md", "docs/PERFORMANCE.md",
+            "workbench/research.py", "outputs/release/result.json", "reports/report.md",
+            "output/figure.pdf", "reference_data/ground_truth/imgt.json",
+            "reference_data/dat/HMMs/FEW.hmm.h3m", "PLAN.md", "LEARNED_ENGINE_NOTEBOOK.md",
+        )
+        for name in forbidden:
+            with self.subTest(name=name):
+                self.assertFalse(TOOLS["allowed_source"](PurePosixPath(name)))
+
     def test_extracts_data_without_archive_permission_bits(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)

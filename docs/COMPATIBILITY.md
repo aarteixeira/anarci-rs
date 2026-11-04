@@ -101,5 +101,6 @@ The reference source hashes, installed distribution version, HMMER version,
 profile hash, permitted test-input provenance and comparison tolerances are
 recorded in [reference-version.json](reference-version.json). The local conda
 artifact pin and source version can use different version labels; the hashes
-identify the code actually compared. Release results and limits are in
-[RELEASE_EVIDENCE.md](RELEASE_EVIDENCE.md).
+identify the code actually compared. Follow the [release procedure](RELEASING.md)
+to qualify each artifact; local result logs and benchmark reports are not part of
+the source distribution.

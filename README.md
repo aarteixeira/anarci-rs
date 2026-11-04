@@ -136,12 +136,29 @@ python scripts/benchmark_release.py --help
 ```
 
 Performance depends on the profile set, batch size, worker count and duplicate
-rate. Benchmark exact and pan modes separately and compare equal work. Current
-release measurements and validation limits are in
-[RELEASE_EVIDENCE.md](docs/RELEASE_EVIDENCE.md); historical measurements in
-`BENCHMARKS.md` are tied to their original code and datasets.
+rate. Benchmark exact and pan modes separately and compare equal work. Use the
+[release benchmark tool](scripts/benchmark_release.py) with isolated native and
+reference environments; record input hashes, settings and platform details with
+each result. Local measurements and analysis reports are not distributed.
+See the [release procedure](docs/RELEASING.md) for qualification requirements.
 
 ## Development
+
+For agent-led changes, start with [AGENTS.md](AGENTS.md) and the
+[architecture map](docs/agents/ARCHITECTURE.md). The
+[development playbook](docs/agents/PLAYBOOK.md) covers task routing, validation
+and parallel handoffs. Offline navigation tools require Python 3.11 or newer:
+
+```bash
+python3.12 scripts/agent_tools.py context anarci-core
+python3.12 scripts/agent_tools.py impact --git
+python3.12 scripts/agent_tools.py check
+```
+
+Use any Python 3.11+ interpreter in place of `python3.12`. This requirement applies
+only to the agent tools, not to the installed package. The
+[agent CI checks](.github/workflows/agents.yml) reject stale maps without compiling
+the native backend.
 
 ```bash
 maturin develop --release

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "components": [
+    {"id": "python-api", "path": "python", "description": "Extended Python API and reference-compatible anarci facade", "depends_on": ["anarci-py"], "recipes": ["python"]},
+    {"id": "reference-data", "path": "reference_data", "description": "Bundled profiles and reference inputs; preserve provenance and attribution", "depends_on": [], "recipes": ["core", "hmm", "python", "release"]},
+    {"id": "release", "path": "licenses", "description": "Packaging, distribution qualification and retained notices", "depends_on": [], "recipes": ["packaging", "release"]},
+    {"id": "documentation", "path": "docs", "description": "Public API, build and release contracts", "depends_on": [], "recipes": []},
+    {"id": "scripts", "path": "scripts", "description": "Development, validation and data preparation tools", "depends_on": [], "recipes": []},
+    {"id": "agent-infra", "path": ".agents", "description": "Agent routing policy, repository graph generator and instructions", "depends_on": [], "recipes": ["agent"]}
+  ],
+  "crate_recipes": {
+    "anarci-core": ["core"],
+    "anarci-hmm": ["hmm"],
+    "hmmer-sys": ["hmm"],
+    "anarci-cli": ["cli"],
+    "anarci-py": ["python"],
+    "anarci-learned": ["learned"]
+  },
+  "routes": [
+    {"patterns": [".gitignore", "docs/DISTRIBUTION.md", "AGENTS.md", ".agents/**", "docs/agents/**", "scripts/agent_tools.py", "tests/agent_tools/**", ".github/workflows/agents.yml"], "components": ["agent-infra"]},
+    {"patterns": ["Cargo.toml", "Cargo.lock", ".cargo/**", "pyproject.toml", ".github/workflows/wheels.yml", "NOTICE.md", "LICENSE", "scripts/validate_release.py", "scripts/benchmark_release.py", "scripts/generate_rust_notices.py", "tests/packaging/**"], "components": ["release"]},
+    {"patterns": ["tests/python/**"], "components": ["python-api"]},
+    {"patterns": ["tests/fixtures/**"], "components": ["anarci-core", "anarci-hmm", "anarci-learned"]}
+  ],
+  "recipes": {
+    "agent": {"commands": ["python3 scripts/agent_tools.py check", "python3 -m unittest discover -s tests/agent_tools -v"], "requires": "Python 3.11+; no third-party dependencies or network", "tier": "offline"},
+    "core": {"commands": ["cargo test --locked -p anarci-core --lib", "cargo test --locked -p anarci-core --test native_input_contract"], "requires": "Rust and cached Cargo dependencies; historical fixture integration tests are separate", "tier": "targeted"},
+    "hmm": {"commands": ["cargo test --locked -p anarci-hmm --lib robustness_tests"], "requires": "Rust, C compiler, make, libclang, verified HMMER source or network; see docs/BUILDING.md", "tier": "native"},
+    "cli": {"commands": ["cargo test --locked -p anarci-cli --lib"], "requires": "Native HMMER build prerequisites", "tier": "native"},
+    "python": {"commands": ["maturin develop --release --locked", "python -m unittest discover -s tests/python -v"], "requires": "Isolated Python environment, maturin and native build prerequisites; rebuild extension after Rust edits", "tier": "installed"},
+    "learned": {"commands": ["cargo test --locked -p anarci-learned --lib"], "requires": "Rust and cached dependencies; currently a library compilation check with no unit tests. Use the installed Python experimental contracts for synthetic behavior checks. Historical fixture integration suites and model features require separate review", "tier": "targeted"},
+    "learned-fixtures": {"commands": ["cargo test --locked -p anarci-learned --test codec --test decode --test augment --test data"], "requires": "Opt-in only after reviewing and authorizing historical tests/fixtures/golden.json.gz provenance and use; these tests read that fixture, including tests named augmentation and decoder. Not a release qualification or trained-model accuracy check", "tier": "historical-opt-in"},
+    "packaging": {"commands": ["python -m unittest discover -s tests/packaging -v"], "requires": "Python; source extraction tests, not wheel qualification", "tier": "offline"},
+    "release": {"commands": ["python scripts/validate_release.py --help", "python scripts/generate_rust_notices.py --check"], "requires": "Follow docs/RELEASING.md for actual artifact qualification; --help does not validate a release; notices check needs dependency sources cached", "tier": "release-review"}
+  },
+  "data_dependencies": [
+    {"from": "anarci-hmm", "to": "reference-data", "evidence": "crates/anarci-hmm/src/lib.rs"},
+    {"from": "anarci-cli", "to": "reference-data", "evidence": "crates/anarci-cli/src/engine.rs"},
+    {"from": "anarci-py", "to": "reference-data", "evidence": "crates/anarci-py/src/lib.rs"}
+  ],
+  "flows": [
+    {"from": "python-api", "to": "anarci-py", "label": "Python arguments and result conversion", "evidence": "python/anarci_rs/_api.py"},
+    {"from": "anarci-py", "to": "anarci-cli", "label": "Shared sequence and structure tools", "evidence": "crates/anarci-py/src/features.rs"},
+    {"from": "anarci-cli", "to": "anarci-hmm", "label": "Engine selection and scan", "evidence": "crates/anarci-cli/src/engine.rs"},
+    {"from": "anarci-hmm", "to": "hmmer-sys", "label": "Native HMMER FFI", "evidence": "crates/anarci-hmm/src/lib.rs"},
+    {"from": "anarci-hmm", "to": "anarci-core", "label": "Scan results feed numbering orchestration", "evidence": "crates/anarci-hmm/src/lib.rs"},
+    {"from": "anarci-learned", "to": "anarci-core", "label": "Experimental codec uses core state types", "evidence": "crates/anarci-learned/src/labels.rs"}
+  ]
+}
