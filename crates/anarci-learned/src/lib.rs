@@ -2,7 +2,7 @@
 //!
 //! The learned engine predicts only the per-residue [`labels::Label`] stream; the
 //! existing byte-exact `anarci-core` code turns the decoded state vectors into numbering
-//! for every scheme. See `LEARNED_ENGINE_PLAN.md`.
+//! for every scheme. See `docs/EXPERIMENTAL.md` for supported tools and limits.
 //!
 //! This crate is pure Rust and ML-runtime-free by default; the model (candle) lives
 //! behind a Cargo feature so the default wheel stays lean.

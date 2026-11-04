@@ -7,8 +7,8 @@
 //! *standard* numbering and *synthetic* capability suites (partials/multi-V) — derived only
 //! from test-split domains, so no leakage. NOTE: genuine external eval data (real 5'-RACE
 //! partial reads, real scFv/BiTE constructs, constant-region-bearing chains) is NOT bundled
-//! and must be curated before the corresponding paper experiments (E5/E4/E6) are claimed —
-//! see LEARNED_ENGINE_PLAN.md §5.
+//! and must be curated before claiming performance on those inputs.
+//! See docs/EXPERIMENTAL.md for the experimental tools and validation limits.
 
 use anarci_core::{State, StateType};
 use anarci_learned::data::{build_dataset, DomainRec, Split};

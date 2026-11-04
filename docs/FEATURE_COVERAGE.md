@@ -2,8 +2,9 @@
 
 This table maps existing Rust functionality to the Python interfaces and
 release checks. A supported input contract has tests for accepted and rejected
-inputs. Test results and platform evidence are recorded separately in
-[RELEASE_EVIDENCE.md](RELEASE_EVIDENCE.md).
+inputs. Record completed test results and platform evidence with the reviewed
+artifacts under the [release procedure](RELEASING.md); local run reports are not
+part of the source distribution.
 
 | Rust functionality | Python access | Verification |
 |---|---|---|

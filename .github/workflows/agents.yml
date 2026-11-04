@@ -1,0 +1,25 @@
+name: Agent repository contracts
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-map:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test agent tooling without native builds or dependencies
+        run: python -m unittest discover -s tests/agent_tools -v
+      - name: Test source archive safety and distribution boundaries
+        run: python -m unittest discover -s tests/packaging -v
+      - name: Reject stale repository maps
+        run: python scripts/agent_tools.py check

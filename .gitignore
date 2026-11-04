@@ -1,16 +1,75 @@
-/target
-**/target
-*.pyc
-__pycache__/
-/dist
+# Rust/native and Python build products. Keep Cargo.lock for reproducible builds.
+/target/
+**/target/
+/dist/
+/build/
+/wheelhouse/
+/sourcehouse/
+/source-test/
 *.so
+*.dylib
+*.dll
+*.pyd
+*.o
+*.a
+*.whl
+*.egg-info/
+
+# Python environments, caches, coverage and local test output.
 .venv/
-# workbench: version the pipeline code + manifests (the method); ignore data and outputs
-workbench/**
-!workbench/pdb-ab-census/
-!workbench/pdb-ab-census/*.py
-!workbench/pdb-ab-census/*.sh
-!workbench/pdb-ab-census/*.md
-!workbench/pdb-ab-census/*.js
-!workbench/pdb-ab-census/manifests/
-!workbench/pdb-ab-census/manifests/**
+venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+/coverage.xml
+*.log
+
+# Host/editor state and local credentials; examples may be versioned.
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.env
+.env.*
+!.env.example
+
+# Local biological analyses, research pipelines and generated deliverables.
+# Preserve these on disk, but do not distribute them with the source repository.
+/workbench/
+/output/
+/outputs/
+/reports/
+/checkpoints/
+/runs/
+*.safetensors
+
+# Historical implementation plans, lab notebooks and machine-specific run notes.
+/PLAN.md
+/*_PLAN.md
+/*_NOTEBOOK.md
+/POST_PILOT_ROADMAP.md
+/BENCHMARKS.md
+/docs/PYPI_RELEASE_PLAN.md
+/docs/RELEASE_EVIDENCE.md
+/docs/PERFORMANCE.md
+/scripts/README_TRAINING.md
+/scripts/train_gnode2.sbatch
+/scripts/anarcii_baseline.py
+/scripts/measure_partial_recall.py
+/reference_data/ground_truth/
+
+# Regenerable HMMER indexes; the source ALL.hmm/FEW.hmm profiles stay versioned.
+*.h3f
+*.h3i
+*.h3m
+*.h3p

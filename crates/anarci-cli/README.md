@@ -33,4 +33,4 @@ experimental context for biological interpretation.
 
 See the root [README](../../README.md), [Python API](../../docs/API.md),
 [build guide](../../docs/BUILDING.md) and
-[release evidence](../../docs/RELEASE_EVIDENCE.md).
+[release procedure](../../docs/RELEASING.md).
