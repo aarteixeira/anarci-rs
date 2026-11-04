@@ -276,11 +276,18 @@ def main(argv=None) -> int:
     lookup = sub.add_parser("context", help="Retrieve a bounded file list and neighbors for a component or source path")
     lookup.add_argument("target")
     lookup.add_argument("--limit", type=int, default=25)
+    symbol = sub.add_parser("symbols", help="Query Rust declarations or opt-in semantic navigation")
+    symbol.add_argument("arguments", nargs=argparse.REMAINDER)
+    evaluation = sub.add_parser("eval", help="Prepare and grade isolated agent repair tasks")
+    evaluation.add_argument("arguments", nargs=argparse.REMAINDER)
     change = sub.add_parser("impact", help="Suggest affected components and validation; never run tests")
     change.add_argument("paths", nargs="*")
     change.add_argument("--git", action="store_true", help="Include staged, unstaged and nonignored untracked paths against HEAD")
     args = parser.parse_args(argv)
     try:
+        if args.command in {"symbols", "eval"}:
+            script = "rust_symbols.py" if args.command == "symbols" else "agent_eval.py"
+            return subprocess.run([sys.executable, str(ROOT / "scripts" / script), *args.arguments], cwd=ROOT, check=False).returncode
         if args.command in {"generate", "check"}:
             stale = []
             for path, content in rendered(ROOT).items():
@@ -306,7 +313,7 @@ def main(argv=None) -> int:
                 parser.error("impact requires paths or --git")
             print(json.dumps(impact(ROOT, paths), indent=2, sort_keys=True))
         else:
-            print(json.dumps({"python": sys.version.split()[0], "tools": {tool: shutil.which(tool) for tool in ("git", "cargo", "rustc", "cc", "make", "curl", "tar", "clang", "maturin")},
+            print(json.dumps({"python": sys.version.split()[0], "tools": {tool: shutil.which(tool) for tool in ("git", "gh", "cargo", "rustc", "rust-analyzer", "cc", "make", "curl", "tar", "clang", "maturin")},
                               "environment": {key: os.environ.get(key) for key in ("HMMER_TARBALL", "LIBCLANG_PATH", "VIRTUAL_ENV")},
                               "note": "Availability only, not build qualification. See docs/BUILDING.md; no network or build commands executed."}, indent=2))
     except (OSError, ValueError, KeyError, SyntaxError, subprocess.CalledProcessError) as exc:

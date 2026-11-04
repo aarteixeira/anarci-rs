@@ -1,0 +1,89 @@
+name: Fast source validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fast-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust-core:
+    name: Rust synthetic contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: core-${{ runner.os }}-1.99-${{ hashFiles('Cargo.lock', '**/Cargo.toml') }}
+      - name: Test pure Rust contracts without biological fixture captures
+        run: |
+          cargo test --locked -p anarci-core --lib --test native_input_contract --test property_contract
+          cargo test --locked -p anarci-learned --no-default-features --test property_contract
+
+  native-python:
+    name: Native and Python contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: native-${{ runner.os }}-1.99-${{ hashFiles('Cargo.lock', '**/Cargo.toml') }}
+      - name: Install native build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang libclang-dev curl
+          python -m pip install 'maturin==1.13.3'
+      - name: Test native boundary and shared annotation library
+        run: |
+          cargo test --locked -p anarci-hmm --lib robustness_tests
+          cargo test --locked -p anarci-cli --lib
+      - name: Build one development wheel
+        run: maturin build --locked --interpreter python --out wheelhouse
+      - name: Test the installed wheel outside the checkout
+        run: |
+          python -m venv "$RUNNER_TEMP/contract-install"
+          "$RUNNER_TEMP/contract-install/bin/python" -m pip install --no-deps wheelhouse/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/contract-install/bin/python" -I -m unittest discover -s "$GITHUB_WORKSPACE/tests/python" -v
+          "$RUNNER_TEMP/contract-install/bin/anarci-rs" --help
+
+  required:
+    name: Fast validation
+    if: ${{ always() }}
+    needs: [rust-core, native-python]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every contract job to pass
+        env:
+          RUST_RESULT: ${{ needs.rust-core.result }}
+          NATIVE_RESULT: ${{ needs.native-python.result }}
+        run: |
+          test "$RUST_RESULT" = success
+          test "$NATIVE_RESULT" = success

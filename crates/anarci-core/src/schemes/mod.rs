@@ -95,7 +95,13 @@ fn flush_fw1(buffer: &[State], nins: usize, sv: &mut Vec<State>) {
     if nt_dels >= nins as i32 {
         let new_match: Vec<(u8, StateType)> =
             buffer.iter().filter(|s| s.typ == M).map(|s| (s.id, s.typ)).collect();
-        let first = new_match[0].0 as i32;
+        let Some(&(first_match, _)) = new_match.first() else {
+            // A truncated synthetic alignment can have insertions but no match in
+            // this buffer. There is no framework anchor from which to renumber it.
+            sv.extend_from_slice(buffer);
+            return;
+        };
+        let first = first_match as i32;
         let nodel: Vec<State> = buffer.iter().copied().filter(|s| s.typ != D).collect();
         let add = nodel.len() as i32 - new_match.len() as i32;
         assert!(add >= 0, "Implementation logic error");
@@ -164,7 +170,18 @@ pub fn number_regions(
     n_regions: usize,
     exclude_deletions: &[usize],
 ) -> CResult<Regions> {
+    validate_alignment(state_vector, sequence)?;
+    if state_string.len() != 128
+        || region_of_state.len() != 128
+        || n_regions == 0
+        || rels.len() < n_regions
+        || region_of_state.iter().any(|&region| region >= n_regions)
+    {
+        return Err(assertion!("Region and state maps must contain 128 valid states"));
+    }
     let state_vector = smooth_insertions(state_vector);
+    // Framework smoothing can synthesize state IDs; validate its result as well.
+    validate_alignment(&state_vector, sequence)?;
 
     let mut regions: Vec<Vec<Res>> = vec![Vec::new(); n_regions];
     let mut insertion: i32 = -1;
@@ -494,14 +511,40 @@ fn regap_imgt_cdr(region: &[Res], maxlength: usize, start: i32, end: i32, prev0:
 // Dispatcher
 // ---------------------------------------------------------------------------
 
-/// `number_sequence_from_alignment` — route to the right scheme/chain function.
-/// Errors mirror ANARCI's `AssertionError(...)` messages exactly.
+/// Validate the public alignment boundary before scheme-specific indexing or smoothing.
+fn validate_alignment(state_vector: &[State], sequence: &[u8]) -> CResult<()> {
+    let mut last_id = 0;
+    let mut last_index: Option<usize> = None;
+    for state in state_vector {
+        if !(1..=128).contains(&state.id) || state.id < last_id {
+            return Err(assertion!("State identifiers must increase within 1..128"));
+        }
+        if (state.typ == D) != state.si.is_none() {
+            return Err(assertion!("Only deletion states must have a None sequence index"));
+        }
+        if let Some(index) = state.si {
+            if index >= sequence.len() {
+                return Err(assertion!("State sequence index is out of bounds"));
+            }
+            if last_index.is_some_and(|last| last.checked_add(1) != Some(index)) {
+                return Err(assertion!("State sequence indices must be contiguous"));
+            }
+            last_index = Some(index);
+        }
+        last_id = state.id;
+    }
+    Ok(())
+}
+
+/// `number_sequence_from_alignment` routes validated states to a scheme/chain function.
+/// Invalid state shapes return an assertion error before indexing the sequence.
 pub fn number_sequence_from_alignment(
     state_vector: &[State],
     sequence: &[u8],
     scheme: &str,
     chain_type: Option<&str>,
 ) -> CResult<Numbered> {
+    validate_alignment(state_vector, sequence)?;
     let scheme = scheme.to_lowercase();
     let ct = chain_type.unwrap_or("");
     let is_kl = ct == "K" || ct == "L";

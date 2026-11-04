@@ -23,7 +23,7 @@ import zipfile
 
 REPO = Path(__file__).resolve().parents[1]
 SAFE_TEST_FILES = {"safe_reference.py", "safe_expected.json", "safe_consensus.json", "safe_alignment.json", "safe_helpers.json", "safe_hmmer.txt", "test_api.py",
-                   "test_compat.py", "test_experimental.py", "test_integration.py", "test_console_entry.py", "test_optional_model.py"}
+                   "test_compat.py", "test_experimental.py", "test_integration.py", "test_console_entry.py", "test_optional_model.py", "test_properties.py"}
 SDIST_ROOT = {"Cargo.toml", "Cargo.lock", "pyproject.toml", "PKG-INFO", "LICENSE", "NOTICE.md", "README.md"}
 SDIST_DOCS = {"BUILDING.md", "RELEASING.md", "reference-version.json",
               "API.md", "COMPATIBILITY.md", "FEATURE_COVERAGE.md", "EXPERIMENTAL.md"}

@@ -147,7 +147,8 @@ pub fn strip_boundary_deletes(sv: &[State]) -> Vec<State> {
 ///
 /// A new domain begins at (a) the first domain label after a non-domain label
 /// (linker/constant/…), **or** (b) a match-position **reset** — a `Match(q)` that does
-/// not strictly exceed the previous match id in the current domain. Rule (b) is what
+/// not strictly exceed the previous match id, or falls below the last insertion
+/// owner, in the current domain. Rule (b) is what
 /// separates **abutting / zero-linker** domains (tandem scFv, bispecifics), where there
 /// is no separator residue: the stream is `…Match(128) Match(1)…`, and within a real
 /// domain match ids strictly increase, so a non-increase marks a domain boundary.
@@ -166,24 +167,30 @@ pub fn decode_sequence(labels: &[Label]) -> Vec<Vec<State>> {
     let mut domains: Vec<Vec<State>> = Vec::new();
     let mut run: Vec<LabeledRes> = Vec::new();
     let mut last_match: Option<u8> = None;
+    let mut last_position: Option<u8> = None;
 
     for (si, &label) in labels.iter().enumerate() {
         match label {
             Label::Match(p) => {
                 // (b) position reset with no separator -> flush current (abutting) domain.
-                if last_match.is_some_and(|lm| p <= lm) {
+                if last_match.is_some_and(|lm| p <= lm)
+                    || last_position.is_some_and(|previous| p < previous)
+                {
                     flush(&mut run, &mut domains);
                 }
                 run.push(LabeledRes { si, label });
                 last_match = Some(p);
+                last_position = Some(p);
             }
-            // ponytail: a leading Ins of an abutting next domain (id < last match) is a
-            // non-real shape (domains start with FR1 matches); we don't reset on inserts.
-            Label::Ins(_) => run.push(LabeledRes { si, label }),
+            Label::Ins(p) => {
+                run.push(LabeledRes { si, label });
+                last_position = Some(p);
+            },
             _ => {
                 // (a) non-domain separator label.
                 flush(&mut run, &mut domains);
                 last_match = None;
+                last_position = None;
             }
         }
     }

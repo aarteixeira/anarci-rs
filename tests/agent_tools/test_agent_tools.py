@@ -93,6 +93,14 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(["agent-infra"], result["affected_components"])
         self.assertEqual(["agent"], list(result["suggested_recipes"]))
 
+    def test_navigation_and_evaluation_commands_forward_arguments_and_exit_codes(self):
+        for command, script, arguments in (("symbols", "rust_symbols.py", ["definition", "HmmEngine", "--limit", "2"]),
+                                           ("eval", "agent_eval.py", ["list"])):
+            with self.subTest(command=command), patch.object(tools.subprocess, "run", return_value=subprocess.CompletedProcess([], 3)) as run:
+                self.assertEqual(3, tools.main([command, *arguments]))
+                self.assertEqual([str(ROOT / "scripts" / script), *arguments], run.call_args.args[0][1:])
+                self.assertFalse(run.call_args.kwargs["check"])
+
     def test_outside_paths_rejected(self):
         with self.assertRaisesRegex(ValueError, "outside repository"):
             tools.impact(ROOT, ["../outside.rs"])
