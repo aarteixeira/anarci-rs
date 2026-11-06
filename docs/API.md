@@ -127,3 +127,11 @@ stdlib Python tools use the native engine for raw-sequence numbering; their
 independent-position baseline and bounded mutation search do not predict binding
 or immune tolerance. References and domain format are explicit inputs. See
 [SPECIES_ADAPTATION.md](SPECIES_ADAPTATION.md) for contracts and real OAS preparation.
+
+`anarci_rs.antibody_design.humanize` searches explicit human-reference target
+constraints with minimum edit cardinality. `anarci_rs.vh_autonomy.engineer_vh_autonomy`
+uses a separate interface hypothesis, with optional parent evidence from
+`anarci_rs.autonomy_structure.build_interface_evidence`. See
+[ANTIBODY_DESIGN.md](ANTIBODY_DESIGN.md) for the JSON/Python inputs, finite-scope
+certificates and limits. No solver status establishes biological humanization,
+autonomy or retained binding.

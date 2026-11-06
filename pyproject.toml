@@ -46,6 +46,7 @@ include = [
     { path = "docs/COMPATIBILITY.md", format = "sdist" },
     { path = "docs/EXPERIMENTAL.md", format = "sdist" },
     { path = "docs/SPECIES_ADAPTATION.md", format = "sdist" },
+    { path = "docs/ANTIBODY_DESIGN.md", format = "sdist" },
     { path = "docs/FEATURE_COVERAGE.md", format = "sdist" },
     { path = "docs/reference-version.json", format = "sdist" },
     { path = "scripts/validate_release.py", format = "sdist" },

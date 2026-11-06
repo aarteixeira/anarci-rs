@@ -118,6 +118,13 @@ carry score-only evidence and require independent functional testing.
 See [SPECIES_ADAPTATION.md](docs/SPECIES_ADAPTATION.md) for acquisition, calibration,
 supported formats, protection rules and limitations.
 
+`anarci-species humanize` searches for a minimum edit count within an explicit
+alphabet and target; `anarci-species autonomy` tests a declared VH-interface
+engineering hypothesis. Both include native validation in acceptance and report
+budget exhaustion separately from infeasibility. These are computational results,
+not proof of successful humanization or autonomous binding. See
+[ANTIBODY_DESIGN.md](docs/ANTIBODY_DESIGN.md) for request schemas and proof limits.
+
 ## Command line
 
 ```bash
