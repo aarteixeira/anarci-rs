@@ -6,6 +6,46 @@ import sys
 
 from .species_reference import audit_profile, fit_profile, load_profile, save_profile
 from .species_adaptation import profile_sequence, propose_sequence
+from .antibody_design import humanize
+from .vh_autonomy import engineer_vh_autonomy
+from .autonomy_structure import build_interface_evidence
+from .minimum_edit import EvaluationError
+
+
+def _design_request(path, mode):
+    path = Path(path)
+    if path.stat().st_size > 2 * 1024 * 1024:
+        raise ValueError("Design request exceeds 2 MiB; reference profiles must be supplied by path")
+    request = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(request, dict):
+        raise ValueError("Design request must be a JSON object")
+    def relative(name):
+        if not isinstance(name, str) or not name:
+            raise ValueError("Reference/structure inputs must be explicit file paths")
+        return path.parent / name
+    domains = request.get("domains", []) if mode == "humanize" else [request.get("domain")]
+    if not isinstance(domains, list) or not 1 <= len(domains) <= 2:
+        raise ValueError("Design requires one domain or a VH/VL pair")
+    for domain in domains:
+        if not isinstance(domain, dict) or "profile" not in domain:
+            raise ValueError("Each domain requires its own compatible profile file")
+        domain["profile"] = load_profile(relative(domain["profile"]))
+        for guard in domain.get("guards", []):
+            guard["profile"] = load_profile(relative(guard["profile"]))
+    if mode == "humanize":
+        return humanize(**request)
+    request["projection_profiles"] = [load_profile(relative(name)) for name in request.get("projection_profiles", [])]
+    if "structure" in request:
+        if request.get("interface_evidence") is not None:
+            raise ValueError("Choose structure generation or an existing interface evidence file")
+        structure = request.pop("structure")
+        source = relative(structure.pop("path"))
+        if source.stat().st_size > 20 * 1024 * 1024:
+            raise ValueError("Structure input exceeds 20 MiB")
+        request["interface_evidence"] = build_interface_evidence(request["domain"]["sequence"], source.read_text(), **structure)
+    elif isinstance(request.get("interface_evidence"), str):
+        request["interface_evidence"] = json.loads(relative(request["interface_evidence"]).read_text())
+    return engineer_vh_autonomy(**request)
 
 
 def _records(path):
@@ -25,6 +65,10 @@ def _records(path):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
+    for name in ("humanize", "autonomy"):
+        command = sub.add_parser(name, help="Execute an explicit reviewed minimum-edit design request")
+        command.add_argument("request", type=Path, help="JSON design request; model paths relative to this file")
+        command.add_argument("--output", type=Path)
     audit = sub.add_parser("audit", help="Validate a supplied model and inspect evidence/provenance")
     audit.add_argument("model", type=Path)
     audit.add_argument("--output", type=Path)
@@ -69,7 +113,9 @@ def main(argv=None):
             save_profile(model, args.output)
             print(json.dumps(audit_profile(model), indent=2, sort_keys=True, allow_nan=False))
             return 0
-        if args.command == "audit":
+        if args.command in {"humanize", "autonomy"}:
+            result = _design_request(args.request, args.command)
+        elif args.command == "audit":
             result = audit_profile(load_profile(args.model))
         elif args.command == "score":
             result = profile_sequence(args.sequence, [load_profile(path) for path in args.model],
@@ -89,6 +135,9 @@ def main(argv=None):
         else:
             print(text, end="")
         return 0
+    except EvaluationError as exc:
+        print(json.dumps({"status": "evaluation_error", "message": str(exc)}), file=sys.stderr)
+        return 3
     except (OSError, ValueError, AssertionError, KeyError, TypeError) as exc:
         print("anarci-species: " + str(exc), file=sys.stderr)
         return 2

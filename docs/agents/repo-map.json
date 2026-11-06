@@ -529,6 +529,12 @@
       "to": "file:crates/anarci-py/src/model.rs"
     },
     {
+      "evidence": "docs/ANTIBODY_DESIGN.md",
+      "from": "documentation",
+      "kind": "contains",
+      "to": "file:docs/ANTIBODY_DESIGN.md"
+    },
+    {
       "evidence": "docs/API.md",
       "from": "documentation",
       "kind": "contains",
@@ -643,6 +649,18 @@
       "to": "file:python/anarci_rs/_api.py"
     },
     {
+      "evidence": "python/anarci_rs/antibody_design.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/antibody_design.py"
+    },
+    {
+      "evidence": "python/anarci_rs/autonomy_structure.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/autonomy_structure.py"
+    },
+    {
       "evidence": "python/anarci_rs/cli.py",
       "from": "python-api",
       "kind": "contains",
@@ -673,6 +691,12 @@
       "to": "file:python/anarci_rs/io.py"
     },
     {
+      "evidence": "python/anarci_rs/minimum_edit.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/minimum_edit.py"
+    },
+    {
       "evidence": "python/anarci_rs/schemes.py",
       "from": "python-api",
       "kind": "contains",
@@ -695,6 +719,12 @@
       "from": "python-api",
       "kind": "contains",
       "to": "file:python/anarci_rs/species_reference.py"
+    },
+    {
+      "evidence": "python/anarci_rs/vh_autonomy.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:python/anarci_rs/vh_autonomy.py"
     },
     {
       "evidence": "scripts/build_oas_reference.py",
@@ -739,10 +769,22 @@
       "to": "file:tests/python/safe_reference.py"
     },
     {
+      "evidence": "tests/python/test_antibody_design.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_antibody_design.py"
+    },
+    {
       "evidence": "tests/python/test_api.py",
       "from": "python-api",
       "kind": "contains",
       "to": "file:tests/python/test_api.py"
+    },
+    {
+      "evidence": "tests/python/test_autonomy_structure.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_autonomy_structure.py"
     },
     {
       "evidence": "tests/python/test_compat.py",
@@ -767,6 +809,12 @@
       "from": "python-api",
       "kind": "contains",
       "to": "file:tests/python/test_integration.py"
+    },
+    {
+      "evidence": "tests/python/test_minimum_edit.py",
+      "from": "python-api",
+      "kind": "contains",
+      "to": "file:tests/python/test_minimum_edit.py"
     },
     {
       "evidence": "tests/python/test_optional_model.py",
@@ -1212,6 +1260,62 @@
       "to": "file:python/anarci_rs/io.py"
     },
     {
+      "evidence": "python/anarci_rs/antibody_design.py",
+      "from": "file:python/anarci_rs/antibody_design.py",
+      "kind": "imports",
+      "line": 289,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/antibody_design.py",
+      "from": "file:python/anarci_rs/antibody_design.py",
+      "kind": "imports",
+      "line": 72,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/antibody_design.py",
+      "from": "file:python/anarci_rs/antibody_design.py",
+      "kind": "imports",
+      "line": 135,
+      "to": "file:python/anarci_rs/germlines.py"
+    },
+    {
+      "evidence": "python/anarci_rs/antibody_design.py",
+      "from": "file:python/anarci_rs/antibody_design.py",
+      "kind": "imports",
+      "line": 11,
+      "to": "file:python/anarci_rs/minimum_edit.py"
+    },
+    {
+      "evidence": "python/anarci_rs/antibody_design.py",
+      "from": "file:python/anarci_rs/antibody_design.py",
+      "kind": "imports",
+      "line": 13,
+      "to": "file:python/anarci_rs/species_adaptation.py"
+    },
+    {
+      "evidence": "python/anarci_rs/antibody_design.py",
+      "from": "file:python/anarci_rs/antibody_design.py",
+      "kind": "imports",
+      "line": 12,
+      "to": "file:python/anarci_rs/species_reference.py"
+    },
+    {
+      "evidence": "python/anarci_rs/autonomy_structure.py",
+      "from": "file:python/anarci_rs/autonomy_structure.py",
+      "kind": "imports",
+      "line": 11,
+      "to": "file:python/anarci_rs/__init__.py"
+    },
+    {
+      "evidence": "python/anarci_rs/autonomy_structure.py",
+      "from": "file:python/anarci_rs/autonomy_structure.py",
+      "kind": "imports",
+      "line": 12,
+      "to": "file:python/anarci_rs/species_adaptation.py"
+    },
+    {
       "evidence": "python/anarci_rs/cli.py",
       "from": "file:python/anarci_rs/cli.py",
       "kind": "imports",
@@ -1292,6 +1396,27 @@
       "evidence": "python/anarci_rs/species_cli.py",
       "from": "file:python/anarci_rs/species_cli.py",
       "kind": "imports",
+      "line": 9,
+      "to": "file:python/anarci_rs/antibody_design.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_cli.py",
+      "from": "file:python/anarci_rs/species_cli.py",
+      "kind": "imports",
+      "line": 11,
+      "to": "file:python/anarci_rs/autonomy_structure.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_cli.py",
+      "from": "file:python/anarci_rs/species_cli.py",
+      "kind": "imports",
+      "line": 12,
+      "to": "file:python/anarci_rs/minimum_edit.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_cli.py",
+      "from": "file:python/anarci_rs/species_cli.py",
+      "kind": "imports",
       "line": 8,
       "to": "file:python/anarci_rs/species_adaptation.py"
     },
@@ -1300,6 +1425,34 @@
       "from": "file:python/anarci_rs/species_cli.py",
       "kind": "imports",
       "line": 7,
+      "to": "file:python/anarci_rs/species_reference.py"
+    },
+    {
+      "evidence": "python/anarci_rs/species_cli.py",
+      "from": "file:python/anarci_rs/species_cli.py",
+      "kind": "imports",
+      "line": 10,
+      "to": "file:python/anarci_rs/vh_autonomy.py"
+    },
+    {
+      "evidence": "python/anarci_rs/vh_autonomy.py",
+      "from": "file:python/anarci_rs/vh_autonomy.py",
+      "kind": "imports",
+      "line": 7,
+      "to": "file:python/anarci_rs/antibody_design.py"
+    },
+    {
+      "evidence": "python/anarci_rs/vh_autonomy.py",
+      "from": "file:python/anarci_rs/vh_autonomy.py",
+      "kind": "imports",
+      "line": 9,
+      "to": "file:python/anarci_rs/autonomy_structure.py"
+    },
+    {
+      "evidence": "python/anarci_rs/vh_autonomy.py",
+      "from": "file:python/anarci_rs/vh_autonomy.py",
+      "kind": "imports",
+      "line": 8,
       "to": "file:python/anarci_rs/species_reference.py"
     }
   ],
@@ -2017,6 +2170,14 @@
       "components": [
         "documentation"
       ],
+      "id": "file:docs/ANTIBODY_DESIGN.md",
+      "kind": "file",
+      "path": "docs/ANTIBODY_DESIGN.md"
+    },
+    {
+      "components": [
+        "documentation"
+      ],
       "id": "file:docs/API.md",
       "kind": "file",
       "path": "docs/API.md"
@@ -2194,6 +2355,22 @@
       "components": [
         "python-api"
       ],
+      "id": "file:python/anarci_rs/antibody_design.py",
+      "kind": "file",
+      "path": "python/anarci_rs/antibody_design.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/autonomy_structure.py",
+      "kind": "file",
+      "path": "python/anarci_rs/autonomy_structure.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
       "id": "file:python/anarci_rs/cli.py",
       "kind": "file",
       "path": "python/anarci_rs/cli.py"
@@ -2234,6 +2411,14 @@
       "components": [
         "python-api"
       ],
+      "id": "file:python/anarci_rs/minimum_edit.py",
+      "kind": "file",
+      "path": "python/anarci_rs/minimum_edit.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
       "id": "file:python/anarci_rs/schemes.py",
       "kind": "file",
       "path": "python/anarci_rs/schemes.py"
@@ -2261,6 +2446,14 @@
       "id": "file:python/anarci_rs/species_reference.py",
       "kind": "file",
       "path": "python/anarci_rs/species_reference.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:python/anarci_rs/vh_autonomy.py",
+      "kind": "file",
+      "path": "python/anarci_rs/vh_autonomy.py"
     },
     {
       "components": [
@@ -2556,9 +2749,25 @@
       "components": [
         "python-api"
       ],
+      "id": "file:tests/python/test_antibody_design.py",
+      "kind": "file",
+      "path": "tests/python/test_antibody_design.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
       "id": "file:tests/python/test_api.py",
       "kind": "file",
       "path": "tests/python/test_api.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_autonomy_structure.py",
+      "kind": "file",
+      "path": "tests/python/test_autonomy_structure.py"
     },
     {
       "components": [
@@ -2591,6 +2800,14 @@
       "id": "file:tests/python/test_integration.py",
       "kind": "file",
       "path": "tests/python/test_integration.py"
+    },
+    {
+      "components": [
+        "python-api"
+      ],
+      "id": "file:tests/python/test_minimum_edit.py",
+      "kind": "file",
+      "path": "tests/python/test_minimum_edit.py"
     },
     {
       "components": [

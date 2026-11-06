@@ -6,6 +6,11 @@ experimental independent-position baseline. It does not estimate affinity,
 immunogenicity, organismal fitness or the probability that an antibody came from
 a species. No trained species profile is silently bundled or downloaded.
 
+The `propose` mode below remains a bounded heuristic. For an exact minimum within
+a declared finite edit space, or a separate VH-autonomy hypothesis, use the
+[design modes](ANTIBODY_DESIGN.md). Their certificates do not establish biological
+humanization or function retention.
+
 ## Score and propose
 
 Install the current package, build the real-data atlas below, then use its profiles:
